@@ -17,7 +17,7 @@ def generate_android_binaries(target, source, env):
         gradle_process = ["./gradlew"]
 
     if env["target"] == "editor":
-        gradle_process += ["generateGodotEditor", "generateGodotHorizonOSEditor", "generateGodotPicoOSEditor"]
+        gradle_process += ["generateGodotEditor"]
     else:
         if env["module_mono_enabled"]:
             gradle_process += ["generateGodotMonoTemplates"]

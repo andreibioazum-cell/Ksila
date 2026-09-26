@@ -25,7 +25,7 @@ allprojects {
 ext {
     supportedAbis = ["arm32", "arm64", "x86_32", "x86_64"]
     supportedFlavors = ["editor", "template"]
-    supportedAndroidDistributions = ["android", "horizonos", "picoos"]
+    supportedAndroidDistributions = ["android"]
     supportedFlavorsBuildTypes = [
         "editor": ["debug", "release"],
         "template": ["debug", "release"]
@@ -99,7 +99,7 @@ def templateExcludedBuildTask() {
  * Generates the build tasks for the given flavor
  * @param flavor Must be one of the supported flavors ('template' / 'editor')
  * @param edition Must be one of the supported editions ('standard' / 'mono')
- * @param androidDistro Must be one of the supported Android distributions ('android' / 'horizonos' / 'picoos')
+ * @param androidDistro Must be one of the supported Android distributions ('android')
  */
 def generateBuildTasks(String flavor = "template", String edition = "standard", String androidDistro = "android") {
     if (!supportedFlavors.contains(flavor)) {
@@ -202,19 +202,6 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                         into(androidEditorBuildsDir)
                     }
                 }
-
-                // Copy the generated editor aab to the bin directory.
-                String copyEditorAabTaskName = "copyEditor${capitalizedAndroidDistro}${capitalizedTarget}AabToBin"
-                if (tasks.findByName(copyEditorAabTaskName) != null) {
-                    buildTasks += tasks.getByName(copyEditorAabTaskName)
-                } else {
-                    buildTasks += tasks.create(name: copyEditorAabTaskName, type: Copy) {
-                        dependsOn ":editor:bundle${capitalizedAndroidDistro}${capitalizedTarget}"
-                        from("editor/build/outputs/bundle/${androidDistro}${capitalizedTarget}")
-                        into(androidEditorBuildsDir)
-                        include("android_editor-${androidDistro}-${target}*.aab")
-                    }
-                }
             }
         } else {
             logger.info("No native shared libs for target $target. Skipping build.")
@@ -234,30 +221,6 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
 task generateGodotEditor {
     gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
     dependsOn = generateBuildTasks("editor", "standard", "android")
-}
-
-/**
- * Generate the Godot Editor binaries for HorizonOS devices.
- *
- * Note: Unless the 'generateNativeLibs` argument is specified, the Godot 'tools' shared libraries
- * must have been generated (via scons) prior to running this gradle task.
- * The task will only build the binaries for which the shared libraries is available.
- */
-task generateGodotHorizonOSEditor {
-    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-    dependsOn = generateBuildTasks("editor", "standard", "horizonos")
-}
-
-/**
- * Generate the Godot Editor binaries for PicoOS devices.
- *
- * Note: Unless the 'generateNativeLibs` argument is specified, the Godot 'tools' shared libraries
- * must have been generated (via scons) prior to running this gradle task.
- * The task will only build the binaries for which the shared libraries is available.
- */
-task generateGodotPicoOSEditor {
-    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-    dependsOn = generateBuildTasks("editor", "standard", "picoos")
 }
 
 /**
@@ -299,10 +262,7 @@ task cleanGodotEditor(type: Delete) {
     // Delete the generated binary apks
     delete("editor/build/outputs/apk")
 
-    // Delete the generated aab binaries
-    delete("editor/build/outputs/bundle")
-
-    // Delete the Godot editor apks & aabs in the Godot bin directory
+    // Delete the Godot editor apks in the Godot bin directory
     delete(androidEditorBuildsDir)
 }
 

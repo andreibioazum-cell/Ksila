@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  eslint.config.cjs                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 const fs = require('fs');
 const globals = require('globals');
 const htmlParser = require('@html-eslint/parser');
@@ -6,7 +36,7 @@ const pluginJs = require('@eslint/js');
 const pluginReference = require('eslint-plugin-html');
 const stylistic = require('@stylistic/eslint-plugin');
 
-if (process && process.env && process.env.npm_command && !fs.existsSync('./platform/web/eslint.config.cjs')) {
+if (process && process.env && process.env.npm_command && !fs.existsSync('./misc/eslint.config.cjs')) {
 	throw Error('eslint must be run from the Godot project root folder');
 }
 
@@ -119,7 +149,7 @@ module.exports = [
 
 	// jsdoc2rst (node)
 	{
-		files: ['js/jsdoc2rst/**/*.js', 'platform/web/js/jsdoc2rst/**/*.js'],
+		files: ['js/jsdoc2rst/**/*.js'],
 		languageOptions: {
 			globals: globals.node,
 		},
@@ -127,7 +157,7 @@ module.exports = [
 
 	// engine files (browser)
 	{
-		files: ['js/engine/**/*.js', 'platform/web/js/engine/**/*.js'],
+		files: ['js/engine/**/*.js'],
 		languageOptions: {
 			globals: {
 				...globals.browser,
@@ -143,8 +173,6 @@ module.exports = [
 	{
 		files: [
 			'js/libs/**/*.js',
-			'platform/web/js/libs/**/*.js',
-			'platform/web/js/patches/**/*.js',
 			'modules/**/*.js'
 		],
 		languageOptions: {

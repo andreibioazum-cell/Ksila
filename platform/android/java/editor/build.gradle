@@ -181,29 +181,6 @@ android {
                 }
             }
         }
-        horizonos {
-            dimension "android_distribution"
-            missingDimensionStrategy 'products', 'editor'
-            ndk {
-                //noinspection ChromeOsAbiSupport
-                abiFilters "arm64-v8a"
-            }
-            applicationIdSuffix ".meta"
-            versionNameSuffix "-meta"
-            targetSdkVersion 32
-        }
-        picoos {
-            dimension "android_distribution"
-            missingDimensionStrategy 'products', 'editor'
-            ndk {
-                //noinspection ChromeOsAbiSupport
-                abiFilters "arm64-v8a"
-            }
-            applicationIdSuffix ".pico"
-            versionNameSuffix "-pico"
-            minSdkVersion 29
-            targetSdkVersion 32
-        }
     }
 }
 
@@ -224,11 +201,6 @@ dependencies {
     // Android XR dependencies
     androidImplementation "org.godotengine:godot-openxr-vendors-androidxr:$versions.openxrVendorsVersion"
     androidImplementation "androidx.xr.scenecore:scenecore:1.0.0-rc01"
-
-    // Meta dependencies
-    horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"
-    // Pico dependencies
-    picoosImplementation "org.godotengine:godot-openxr-vendors-pico:$versions.openxrVendorsVersion"
 
     // Android instrumented test dependencies
     androidTestImplementation "androidx.test.ext:junit:$versions.junitVersion"
