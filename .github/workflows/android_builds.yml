@@ -7,7 +7,6 @@ on:
 env:
   SCONS_FLAGS: >-
     module_text_server_fb_enabled=yes
-    scu_build=yes
     accesskit=no
     swappy=no
     profiler=none
