@@ -504,14 +504,6 @@ void ExportTemplateManager::_initialize_template_data() {
 		template_data[TemplateID::VISIONOS] = info;
 	}
 
-	{
-		TemplateInfo info;
-		info.name = TTR("ICU Data");
-		info.description = TTRC("Line breaking dictionaries for TextServer, used by certain languages.");
-		info.file_list = { "icudt_godot.dat" };
-		template_data[TemplateID::ICU_DATA] = info;
-	}
-
 	// Platforms.
 	{
 		PlatformInfo info;
@@ -557,9 +549,7 @@ void ExportTemplateManager::_initialize_template_data() {
 		PlatformInfo info;
 		info.name = "visionOS";
 		info.icon = _get_platform_icon("visionOS");
-#ifndef MODULE_MONO_ENABLED
 		info.templates = { TemplateID::VISIONOS };
-#endif
 		info.group = TTR("Mobile", "Platform Group");
 		platform_map[PlatformID::VISIONOS] = info;
 	}
@@ -567,19 +557,10 @@ void ExportTemplateManager::_initialize_template_data() {
 		PlatformInfo info;
 		info.name = "Web";
 		info.icon = _get_platform_icon("Web");
-#ifndef MODULE_MONO_ENABLED
 		info.templates = { TemplateID::WEB, TemplateID::WEB_EXTENSIONS, TemplateID::WEB_NOTHREADS, TemplateID::WEB_EXTENSIONS_NOTHREADS };
-#endif
 		info.group = TTR("Web", "Platform Group");
 		platform_map[PlatformID::WEB] = info;
 	}
-	{
-		PlatformInfo info;
-		info.name = TTR("Common");
-		info.templates = { TemplateID::ICU_DATA };
-		platform_map[PlatformID::COMMON] = info;
-	}
-
 	// Template directory status.
 	DirAccess::make_dir_recursive_absolute(_get_template_folder_path(GODOT_VERSION_FULL_CONFIG));
 	_update_version_list();
@@ -1354,11 +1335,9 @@ void ExportTemplateManager::_notification(int p_what) {
 			platform_map[PlatformID::ANDROID].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::IOS].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::VISIONOS].group = TTR("Mobile", "Platform Group");
-			platform_map[PlatformID::COMMON].name = TTR("Common");
 			template_data[TemplateID::WEB_EXTENSIONS].name = TTR("Web with Extensions");
 			template_data[TemplateID::WEB_NOTHREADS].name = TTR("Web Single-Threaded");
 			template_data[TemplateID::WEB_EXTENSIONS_NOTHREADS].name = TTR("Web with Extensions Single-Threaded");
-			template_data[TemplateID::ICU_DATA].name = TTR("ICU Data");
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

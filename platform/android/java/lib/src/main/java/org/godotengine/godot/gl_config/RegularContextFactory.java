@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  RegularContextFactory.java                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+package org.godotengine.godot.gl_config;
 
-#include "jolt_globals.h"
-#include "jolt_physics_server_3d.h"
-#include "jolt_project_settings.h"
+import org.godotengine.godot.gl.GLSurfaceView;
+import org.godotengine.godot.utils.GLUtils;
 
-#include "core/config/project_settings.h"
-#include "core/object/callable_mp.h"
-#include "servers/physics_3d/physics_server_3d_manager.h"
-#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
+import android.util.Log;
 
-PhysicsServer3D *create_jolt_physics_server() {
-#ifdef THREADS_ENABLED
-	bool run_on_separate_thread = GLOBAL_GET("physics/3d/run_on_separate_thread");
-#else
-	bool run_on_separate_thread = false;
-#endif
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
+import javax.microedition.khronos.egl.EGLDisplay;
 
-	JoltPhysicsServer3D *physics_server = memnew(JoltPhysicsServer3D(run_on_separate_thread));
+/**
+ * Factory used to setup the opengl context for pancake games.
+ */
+public class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
+	private static final String TAG = RegularContextFactory.class.getSimpleName();
 
-	return memnew(PhysicsServer3DWrapMT(physics_server, run_on_separate_thread));
-}
+	private static final int _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
+	private static final int _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR = 0x00000001;
 
-void initialize_jolt_physics_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
+	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
+
+	private final boolean mUseDebugOpengl;
+
+	public RegularContextFactory() {
+		this(false);
 	}
 
-	jolt_initialize();
-	PhysicsServer3DManager::get_singleton()->register_server(PhysicsServer3DManager::JOLT_PHYSICS_NAME, callable_mp_static(&create_jolt_physics_server));
-	PhysicsServer3DManager::get_singleton()->set_default_server(PhysicsServer3DManager::JOLT_PHYSICS_NAME);
-	JoltProjectSettings::register_settings();
-}
-
-void uninitialize_jolt_physics_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
+	public RegularContextFactory(boolean useDebugOpengl) {
+		this.mUseDebugOpengl = useDebugOpengl;
 	}
 
-	jolt_deinitialize();
+	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+		Log.w(TAG, "creating OpenGL ES 3.0 context :");
+
+		GLUtils.checkEglError(TAG, "Before eglCreateContext", egl);
+		EGLContext context;
+		int[] debug_attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
+		int[] attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
+		if (mUseDebugOpengl) {
+			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, debug_attrib_list);
+			if (context == null || context == EGL10.EGL_NO_CONTEXT) {
+				Log.w(TAG, "creating 'OpenGL Debug' context failed");
+				context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
+			}
+		} else {
+			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
+		}
+		GLUtils.checkEglError(TAG, "After eglCreateContext", egl);
+		return context;
+	}
+
+	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+		egl.eglDestroyContext(display, context);
+	}
 }

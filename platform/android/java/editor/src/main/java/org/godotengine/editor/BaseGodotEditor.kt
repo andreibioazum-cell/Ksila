@@ -73,7 +73,6 @@ import org.godotengine.godot.error.Error
 import org.godotengine.godot.utils.DialogUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
-import org.godotengine.openxr.vendors.utils.*
 import java.io.File
 import kotlin.math.min
 import kotlin.text.indexOf
@@ -117,13 +116,6 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		// Info for the various classes used by the editor.
 		internal val EDITOR_MAIN_INFO = EditorWindowInfo(GodotEditor::class.java, 777, "")
 		internal val EMBEDDED_RUN_GAME_INFO = EditorWindowInfo(EmbeddedGodotGame::class.java, 2667, ":EmbeddedGodotGame")
-		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame", LaunchPolicy.ADJACENT)
-
-		internal val SPATIAL_CONTAINER_RUN_GAME_INFO_0 = EditorWindowInfo(GodotSpatialContainerGame0::class.java,
-			3667, ":GodotSpatialContainerGame0", LaunchPolicy.ADJACENT)
-		internal val SPATIAL_CONTAINER_RUN_GAME_INFO_1 = EditorWindowInfo(GodotSpatialContainerGame1::class.java,
-			3668, ":GodotSpatialContainerGame1", LaunchPolicy.ADJACENT)
-
 		internal val RUN_GAME_INFO_0 = EditorWindowInfo(GodotGame0::class.java, 667, ":GodotGame0", LaunchPolicy.AUTO)
 		internal val RUN_GAME_INFO_1 = EditorWindowInfo(GodotGame1::class.java, 668, ":GodotGame1", LaunchPolicy.AUTO)
 
@@ -137,36 +129,6 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				else -> RUN_GAME_INFO_0
 			}
 		}
-
-		internal fun isSpatialContainerRunGameInfo(editorWindowInfo: EditorWindowInfo): Boolean {
-			return editorWindowInfo == SPATIAL_CONTAINER_RUN_GAME_INFO_0 ||
-				editorWindowInfo == SPATIAL_CONTAINER_RUN_GAME_INFO_1
-		}
-
-		internal fun isSpatialContainerRunGameInfoWindowId(windowId: Int): Boolean {
-			return windowId == SPATIAL_CONTAINER_RUN_GAME_INFO_0.windowId ||
-				windowId == SPATIAL_CONTAINER_RUN_GAME_INFO_1.windowId
-		}
-
-		private fun getSpatialContainerRunGameInfoForInstance(runInstance: Int): EditorWindowInfo {
-			return when (runInstance) {
-				1 -> SPATIAL_CONTAINER_RUN_GAME_INFO_1
-				else -> SPATIAL_CONTAINER_RUN_GAME_INFO_0
-			}
-		}
-
-		/** Default behavior, means we check project settings **/
-		private const val XR_MODE_DEFAULT = "default"
-
-		/**
-		 * Ignore project settings, OpenXR is disabled
-		 */
-		private const val XR_MODE_OFF = "off"
-
-		/**
-		 * Ignore project settings, OpenXR is enabled
-		 */
-		private const val XR_MODE_ON = "on"
 
 		/**
 		 * Sets of constants to specify the window to use to run the project.
@@ -285,18 +247,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			Manifest.permission.REQUEST_INSTALL_PACKAGES,
 		)
 
-		// XR runtime permissions should only be requested when the "xr/openxr/enabled" project setting
-		// is enabled.
-		excludedPermissions.addAll(getXRRuntimePermissions())
 		return excludedPermissions
-	}
-
-	/**
-	 * Set of permissions to request when the "xr/openxr/enabled" project setting is enabled.
-	 */
-	@CallSuper
-	protected open fun getXRRuntimePermissions(): MutableSet<String> {
-		return mutableSetOf()
 	}
 
 	override fun shouldSanitizeLaunchIntent(): Boolean {
@@ -331,7 +282,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		// Add the game menu bar.
 		setupGameMenuBar()
 
-		if (!isLargeScreen && !isNativeXRDevice(applicationContext) && godot?.isEditorHint() == true) {
+		if (!isLargeScreen && godot?.isEditorHint() == true) {
 			// Lock the editor screen orientation to landscape on small screens.
 			changingOrientationAllowed = true
 			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
@@ -354,56 +305,6 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	override fun onDestroy() {
 		gradleBuildProvider.buildEnvDisconnect()
 		super.onDestroy()
-	}
-
-	override fun onNewIntent(newIntent: Intent) {
-		if (newIntent.hasCategory(HYBRID_APP_PANEL_CATEGORY) || newIntent.hasCategory(HYBRID_APP_IMMERSIVE_CATEGORY)) {
-			val params = retrieveCommandLineParamsFromLaunchIntent(newIntent)
-			Log.d(TAG, "Received hybrid transition intent $newIntent with parameters ${params.contentToString()}")
-			// Override EXTRA_NEW_LAUNCH so the editor is not restarted
-			newIntent.putExtra(EXTRA_NEW_LAUNCH, false)
-
-			godot?.runOnRenderThread {
-				// Look for the scene, XR-mode, and hybrid data arguments.
-				var scene = ""
-				var xrMode = XR_MODE_DEFAULT
-				var path = ""
-				var base64HybridData = ""
-				if (params.isNotEmpty()) {
-					val sceneIndex = params.indexOf(SCENE_ARG)
-					if (sceneIndex != -1 && sceneIndex + 1 < params.size) {
-						scene = params[sceneIndex +1]
-					}
-
-					val xrModeIndex = params.indexOf(XR_MODE_ARG)
-					if (xrModeIndex != -1 && xrModeIndex + 1 < params.size) {
-						xrMode = params[xrModeIndex + 1]
-					}
-
-					val pathIndex = params.indexOf(PATH_ARG)
-					if (pathIndex != -1 && pathIndex + 1 < params.size) {
-						path = params[pathIndex + 1]
-					}
-
-					val hybridDataIndex = params.indexOf(HYBRID_DATA_ARG)
-					if (hybridDataIndex != -1 && hybridDataIndex + 1 < params.size) {
-						base64HybridData = params[hybridDataIndex + 1]
-					}
-				}
-
-				val sceneArgs = mutableSetOf(XR_MODE_ARG, xrMode, HYBRID_DATA_ARG, base64HybridData).apply {
-					if (path.isNotEmpty() && scene.isEmpty()) {
-						add(PATH_ARG)
-						add(path)
-					}
-				}
-
-				Log.d(TAG, "Running scene $scene with arguments: $sceneArgs")
-				EditorUtils.runScene(scene, sceneArgs.toTypedArray())
-			}
-		}
-
-		super.onNewIntent(newIntent)
 	}
 
 	override fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
@@ -635,16 +536,12 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	protected fun retrieveEditorWindowInfo(args: Array<String>, gameEmbedMode: GameEmbedMode): EditorWindowInfo {
 		var hasEditor = false
-		var xrMode = XR_MODE_DEFAULT
 		var runInstance = 0
 
 		var i = 0
 		while (i < args.size) {
 			when (args[i++]) {
 				EDITOR_ARG, EDITOR_ARG_SHORT, EDITOR_PROJECT_MANAGER_ARG, EDITOR_PROJECT_MANAGER_ARG_SHORT -> hasEditor = true
-				XR_MODE_ARG -> {
-					xrMode = args[i++]
-				}
 				RUN_INSTANCE_ARG -> {
 					val runInstanceValue = args[i++]
 					try {
@@ -660,34 +557,12 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			return EDITOR_MAIN_INFO
 		}
 
-		// Launching a game.
-		if (isNativeXRDevice(applicationContext)) {
-			val gameInfo = if (xrMode == XR_MODE_ON) {
-				XR_RUN_GAME_INFO
-			} else if ((xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())) {
-				if (getHybridAppLaunchMode() == HybridMode.PANEL) {
-					getRunGameInfoForInstance(runInstance)
-				} else {
-					XR_RUN_GAME_INFO
-				}
-			} else {
-				// Native XR devices don't support embed mode yet.
-				getRunGameInfoForInstance(runInstance)
-			}
-
-			return if (gameInfo == XR_RUN_GAME_INFO && GodotSpatialContainerGame.isSpatialContainerEnabled()) {
-				getSpatialContainerRunGameInfoForInstance(runInstance)
-			} else {
-				gameInfo
-			}
-		}
-
 		// Project manager doesn't support embed mode.
 		if (godot?.isProjectManagerHint() == true) {
 			return RUN_GAME_INFO_0
 		}
 
-		// Check for embed mode launch (not supported on native XR devices).
+		// Check for embed mode launch.
 		val resolvedEmbedMode = resolveGameEmbedModeIfNeeded(gameEmbedMode)
 		return if (resolvedEmbedMode == GameEmbedMode.DISABLED) {
 			RUN_GAME_INFO_0
@@ -699,14 +574,10 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private fun getEditorWindowInfoForInstanceId(instanceId: Int): EditorWindowInfo? {
 		return when (instanceId) {
 			EDITOR_MAIN_INFO.windowId -> EDITOR_MAIN_INFO
-			XR_RUN_GAME_INFO.windowId -> XR_RUN_GAME_INFO
 			EMBEDDED_RUN_GAME_INFO.windowId -> EMBEDDED_RUN_GAME_INFO
 
 			RUN_GAME_INFO_0.windowId -> RUN_GAME_INFO_0
 			RUN_GAME_INFO_1.windowId -> RUN_GAME_INFO_1
-
-			SPATIAL_CONTAINER_RUN_GAME_INFO_0.windowId -> SPATIAL_CONTAINER_RUN_GAME_INFO_0
-			SPATIAL_CONTAINER_RUN_GAME_INFO_1.windowId -> SPATIAL_CONTAINER_RUN_GAME_INFO_1
 
 			else -> null
 		}
@@ -877,7 +748,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private fun resolveGameEmbedModeIfNeeded(embedMode: GameEmbedMode): GameEmbedMode {
 		return when (embedMode) {
 			GameEmbedMode.AUTO -> {
-				if (isInMultiWindowMode || isLargeScreen || isNativeXRDevice(applicationContext)) {
+				if (isInMultiWindowMode || isLargeScreen) {
 					GameEmbedMode.DISABLED
 				} else {
 					GameEmbedMode.ENABLED
@@ -895,7 +766,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private fun resolveLaunchPolicyIfNeeded(policy: LaunchPolicy): LaunchPolicy {
 		return when (policy) {
 			LaunchPolicy.AUTO -> {
-				val defaultLaunchPolicy = if (isInMultiWindowMode || isLargeScreen || isNativeXRDevice(applicationContext)) {
+				val defaultLaunchPolicy = if (isInMultiWindowMode || isLargeScreen) {
 					LaunchPolicy.ADJACENT
 				} else {
 					LaunchPolicy.SAME
@@ -998,10 +869,6 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	@CallSuper
 	override fun supportsFeature(featureTag: String): Boolean {
-		if (featureTag == "xr_editor") {
-			return isNativeXRDevice(applicationContext)
-		}
-
 		if (featureTag == BuildConfig.FLAVOR) {
 			return true
 		}
@@ -1018,12 +885,6 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			RUN_GAME_INFO_1.windowId -> {
 				runOnUiThread {
 					embeddedGameViewContainerWindow?.isVisible = false
-				}
-			}
-
-			XR_RUN_GAME_INFO.windowId -> {
-				runOnUiThread {
-					updateEmbeddedGameView(gameRunning = true, gameEmbedded = false)
 				}
 			}
 		}
@@ -1064,14 +925,9 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				return
 			}
 
-			val spatialContainerRunning =
-				editorMessageDispatcher.hasEditorConnection(SPATIAL_CONTAINER_RUN_GAME_INFO_0) ||
-					editorMessageDispatcher.hasEditorConnection(SPATIAL_CONTAINER_RUN_GAME_INFO_1)
-			val xrGameRunning = editorMessageDispatcher.hasEditorConnection(XR_RUN_GAME_INFO)
-			val gameRunning = spatialContainerRunning || xrGameRunning
 			val gameEmbedMode = resolveGameEmbedModeIfNeeded(fetchGameEmbedMode())
 			runOnUiThread {
-				updateEmbeddedGameView(gameRunning, gameEmbedMode != GameEmbedMode.DISABLED)
+				updateEmbeddedGameView(false, gameEmbedMode != GameEmbedMode.DISABLED)
 				embeddedGameViewContainerWindow?.isVisible = true
 			}
 		}
@@ -1279,7 +1135,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 	}
 
-	override fun isGameEmbeddingSupported() = !isNativeXRDevice(applicationContext)
+	override fun isGameEmbeddingSupported() = true
 
 	override fun getBuildProvider(): BuildProvider? {
 		return gradleBuildProvider

@@ -135,8 +135,6 @@ class ExportTemplateManager : public AcceptDialog {
 
 		IOS,
 		VISIONOS,
-
-		ICU_DATA,
 	};
 
 	enum class PlatformID {
@@ -147,7 +145,6 @@ class ExportTemplateManager : public AcceptDialog {
 		ANDROID,
 		IOS,
 		VISIONOS,
-		COMMON,
 	};
 
 	enum class DownloadStatus {

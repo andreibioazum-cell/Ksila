@@ -147,10 +147,6 @@
 
 #include "modules/modules_enabled.gen.h" // For mono.
 
-#if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
-#include "modules/mono/editor/bindings_generator.h"
-#endif
-
 #ifdef MODULE_GDSCRIPT_ENABLED
 #include "modules/gdscript/gdscript.h"
 #if defined(TOOLS_ENABLED) && !defined(GDSCRIPT_NO_LSP)
@@ -3882,15 +3878,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 	theme_db->initialize_theme();
 	audio_server->load_default_bus_layout();
 
-#if defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
-	// Hacky to have it here, but we don't have good facility yet to let modules
-	// register command line options to call at the right time. This needs to happen
-	// after init'ing the ScriptServer, but also after init'ing the ThemeDB,
-	// for the C# docs generation in the bindings.
-	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
-	BindingsGenerator::handle_cmdline_args(cmdline_args);
-#endif
-
 #ifdef DEBUG_ENABLED
 	if (use_debug_profiler && EngineDebugger::is_active()) {
 		// Start the "scripts" profiler, used in local debugging.
@@ -4206,15 +4193,6 @@ int Main::start() {
 				ERR_FAIL_COND_V_MSG(!da->dir_exists("doc"), EXIT_FAILURE, "--doctool must be run from the Godot repository's root folder, or specify a path that points there.");
 			}
 		}
-
-#ifndef MODULE_MONO_ENABLED
-		// Hack to define .NET-specific project settings even on non-.NET builds,
-		// so that we don't lose their descriptions and default values in DocTools.
-		// Default values should be synced with mono_gd/gd_mono.cpp.
-		GLOBAL_DEF("dotnet/project/assembly_name", "");
-		GLOBAL_DEF("dotnet/project/solution_directory", "");
-		GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
-#endif
 
 		Error err;
 		DocTools doc;

@@ -54,12 +54,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #include "modules/svg/image_loader_svg.h"
-
-#ifdef MODULE_MONO_ENABLED
-#include "modules/mono/utils/path_utils.h"
-#endif
 
 #ifdef ANDROID_ENABLED
 #include "../os_android.h"

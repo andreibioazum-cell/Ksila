@@ -50,8 +50,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
-
-#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #endif // TOOLS_ENABLED
 
 ProjectSettings *ProjectSettings::get_singleton() {
@@ -95,9 +93,6 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 	features.append("LibGodot");
 #endif
 
-#ifdef MODULE_MONO_ENABLED
-	features.append("C#");
-#endif
 	// Allow pinning to a specific patch number or build type by marking
 	// them as supported. They're only used if the user adds them manually.
 	features.append(GODOT_VERSION_BRANCH "." _MKSTR(GODOT_VERSION_PATCH));

@@ -66,21 +66,6 @@
                 android:defaultWidth="@dimen/editor_default_window_width"
                 android:defaultHeight="@dimen/editor_default_window_height" />
 
-            <!-- Intent filter used to intercept hybrid PANEL launch for the current editor project, and route it
-            properly through the editor 'run' logic (e.g: debugger setup) -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="org.godotengine.xr.hybrid.PANEL" />
-            </intent-filter>
-
-            <!-- Intent filter used to intercept hybrid IMMERSIVE launch for the current editor project, and route it
-            properly through the editor 'run' logic (e.g: debugger setup) -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="org.godotengine.xr.hybrid.IMMERSIVE" />
-            </intent-filter>
         </activity>
         <activity-alias
             android:name=".ProjectManager"
@@ -149,62 +134,6 @@
             android:launchMode="singleTask"
             android:process=":EmbeddedGodotGame"
             android:supportsPictureInPicture="true" />
-        <activity
-            android:name=".GodotXRGame"
-            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:process=":GodotXRGame"
-            android:launchMode="singleTask"
-            android:taskAffinity=":xr"
-            android:icon="@mipmap/ic_play_window"
-            android:label="@string/godot_game_activity_name"
-            android:exported="false"
-            android:autoRemoveFromRecents="true"
-            android:screenOrientation="landscape"
-            android:resizeableActivity="false"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
-
-        <activity
-            android:name=".GodotSpatialContainerGame0"
-            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:process=":GodotSpatialContainerGame0"
-            android:icon="@mipmap/ic_play_window"
-            android:label="@string/godot_game_activity_name"
-            android:exported="false"
-            android:autoRemoveFromRecents="true"
-            android:screenOrientation="landscape"
-            android:resizeableActivity="false"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
-
-            <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_USED_BOUNDS_MODES" android:value="" />
-            <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE" android:value="XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_UNDEFINED" />
-        </activity>
-        <activity
-            android:name=".GodotSpatialContainerGame1"
-            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:process=":GodotSpatialContainerGame1"
-            android:icon="@mipmap/ic_play_window"
-            android:label="@string/godot_game_activity_name"
-            android:exported="false"
-            android:autoRemoveFromRecents="true"
-            android:screenOrientation="landscape"
-            android:resizeableActivity="false"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
-
-            <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_USED_BOUNDS_MODES" android:value="" />
-            <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE" android:value="XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_UNDEFINED" />
-        </activity>
-
-        <!--
-        We remove this meta-data originating from the vendors plugin as we only need the loader for
-        now since the project being edited provides its own version of the vendors plugin.
-
-        This needs to be removed once we start implementing the immersive version of the project
-        manager and editor windows.
-         -->
-        <meta-data
-            android:name="org.godotengine.plugin.v2.GodotOpenXR"
-            android:value="org.godotengine.openxr.vendors.GodotOpenXR"
-            tools:node="remove" />
     </application>
 
 </manifest>

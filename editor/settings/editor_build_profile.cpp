@@ -49,8 +49,6 @@
 #include "scene/gui/separator.h"
 #include "servers/physics_3d/physics_server_3d_manager.h"
 
-#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
-
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
 	"disable_2d",
@@ -60,7 +58,6 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"accesskit",
 	"sdl",
 	"disable_xr",
-	"module_openxr_enabled",
 	"wayland",
 	"x11",
 	"pulseaudio",
@@ -75,13 +72,10 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"disable_physics_2d",
 	"module_godot_physics_2d_enabled",
 	"disable_physics_3d",
-	"module_godot_physics_3d_enabled",
 	"module_jolt_physics_enabled",
 	"module_text_server_fb_enabled",
-	"module_text_server_adv_enabled",
 	"module_freetype_enabled",
 	"brotli",
-	"graphite",
 	"module_msdfgen_enabled",
 };
 
@@ -94,7 +88,6 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 	false, // ACCESSKIT
 	false, // SDL
 	false, // XR
-	false, // OPENXR
 	false, // WAYLAND
 	false, // X11
 	false, // PULSEAUDIO
@@ -109,13 +102,10 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 	false, // PHYSICS_2D
 	false, // PHYSICS_GODOT_2D
 	false, // PHYSICS_3D
-	false, // PHYSICS_GODOT_3D
 	false, // PHYSICS_JOLT
 	true, // TEXT_SERVER_FALLBACK
-	false, // TEXT_SERVER_ADVANCED
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
 };
 
@@ -128,7 +118,6 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	false, // ACCESSKIT
 	false, // SDL
 	true, // XR
-	false, // OPENXR
 	false, // WAYLAND
 	false, // X11
 	false, // PULSEAUDIO
@@ -143,13 +132,10 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	true, // PHYSICS_2D
 	false, // PHYSICS_GODOT_2D
 	true, // PHYSICS_3D
-	false, // PHYSICS_GODOT_3D
 	false, // PHYSICS_JOLT
 	false, // TEXT_SERVER_FALLBACK
-	false, // TEXT_SERVER_ADVANCED
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
 };
 
@@ -162,7 +148,6 @@ const bool EditorBuildProfile::build_option_explicit_use[BUILD_OPTION_MAX] = {
 	false, // ACCESSKIT
 	false, // SDL
 	false, // XR
-	false, // OPENXR
 	false, // WAYLAND
 	false, // X11
 	false, // PULSEAUDIO
@@ -177,13 +162,10 @@ const bool EditorBuildProfile::build_option_explicit_use[BUILD_OPTION_MAX] = {
 	false, // PHYSICS_2D
 	false, // PHYSICS_GODOT_2D
 	false, // PHYSICS_3D
-	false, // PHYSICS_GODOT_3D
 	false, // PHYSICS_JOLT
 	false, // TEXT_SERVER_FALLBACK
-	false, // TEXT_SERVER_ADVANCED
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRAPHITE_FONTS
 	true, // MSDFGEN
 };
 
@@ -195,7 +177,6 @@ const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_c
 	BUILD_OPTION_CATEGORY_GENERAL, // ACCESSKIT
 	BUILD_OPTION_CATEGORY_GENERAL, // SDL
 	BUILD_OPTION_CATEGORY_GENERAL, // XR
-	BUILD_OPTION_CATEGORY_GENERAL, // OPENXR
 	BUILD_OPTION_CATEGORY_GENERAL, // WAYLAND
 	BUILD_OPTION_CATEGORY_GENERAL, // X11
 	BUILD_OPTION_CATEGORY_GENERAL, // PULSEAUDIO
@@ -210,13 +191,10 @@ const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_c
 	BUILD_OPTION_CATEGORY_PHYSICS, // PHYSICS_2D
 	BUILD_OPTION_CATEGORY_PHYSICS, // PHYSICS_GODOT_2D
 	BUILD_OPTION_CATEGORY_PHYSICS, // PHYSICS_3D
-	BUILD_OPTION_CATEGORY_PHYSICS, // PHYSICS_GODOT_3D
 	BUILD_OPTION_CATEGORY_PHYSICS, // PHYSICS_JOLT
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // TEXT_SERVER_FALLBACK
-	BUILD_OPTION_CATEGORY_TEXT_SERVER, // TEXT_SERVER_ADVANCED
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // DYNAMIC_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // WOFF2_FONTS
-	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRAPHITE_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // MSDFGEN
 };
 
@@ -226,9 +204,6 @@ HashMap<EditorBuildProfile::BuildOption, HashMap<String, LocalVector<Variant>>> 
 /* clang-format off */
 
 const HashMap<EditorBuildProfile::BuildOption, LocalVector<EditorBuildProfile::BuildOption>> EditorBuildProfile::build_option_dependencies = {
-	{ BUILD_OPTION_OPENXR, {
-			BUILD_OPTION_XR,
-	} },
 	{ BUILD_OPTION_FORWARD_RENDERER, {
 			BUILD_OPTION_RENDERING_DEVICE,
 	} },
@@ -250,20 +225,14 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<EditorBuildProfile::B
 	{ BUILD_OPTION_PHYSICS_GODOT_2D, {
 			BUILD_OPTION_PHYSICS_2D,
 	} },
-	{ BUILD_OPTION_PHYSICS_GODOT_3D, {
-			BUILD_OPTION_PHYSICS_3D,
-	} },
 	{ BUILD_OPTION_PHYSICS_JOLT, {
 			BUILD_OPTION_PHYSICS_3D,
 	} },
 	{ BUILD_OPTION_DYNAMIC_FONTS, {
-			BUILD_OPTION_TEXT_SERVER_ADVANCED,
+			BUILD_OPTION_TEXT_SERVER_FALLBACK,
 	} },
 	{ BUILD_OPTION_WOFF2_FONTS, {
-			BUILD_OPTION_TEXT_SERVER_ADVANCED,
-	} },
-	{ BUILD_OPTION_GRAPHITE_FONTS, {
-			BUILD_OPTION_TEXT_SERVER_ADVANCED,
+			BUILD_OPTION_TEXT_SERVER_FALLBACK,
 	} },
 };
 
@@ -342,11 +311,6 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<String>> EditorBuildP
 			"SoftBody3D",
 			"SpringArm3D",
 			"VehicleWheel3D",
-	} },
-	{ BUILD_OPTION_TEXT_SERVER_ADVANCED, {
-			"CanvasItem",
-			"Label3D",
-			"TextServerAdvanced",
 	} },
 };
 
@@ -641,7 +605,6 @@ void EditorBuildProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(BUILD_OPTION_NAVIGATION_2D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_NAVIGATION_3D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_XR);
-	BIND_ENUM_CONSTANT(BUILD_OPTION_OPENXR);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_WAYLAND);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_X11);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_RENDERING_DEVICE);
@@ -654,13 +617,10 @@ void EditorBuildProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(BUILD_OPTION_PHYSICS_2D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_PHYSICS_GODOT_2D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_PHYSICS_3D);
-	BIND_ENUM_CONSTANT(BUILD_OPTION_PHYSICS_GODOT_3D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_PHYSICS_JOLT);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_TEXT_SERVER_FALLBACK);
-	BIND_ENUM_CONSTANT(BUILD_OPTION_TEXT_SERVER_ADVANCED);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_DYNAMIC_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_WOFF2_FONTS);
-	BIND_ENUM_CONSTANT(BUILD_OPTION_GRAPHITE_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MSDFGEN);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MAX);
 
@@ -673,11 +633,6 @@ void EditorBuildProfile::_bind_methods() {
 
 EditorBuildProfile::EditorBuildProfile() {
 	reset_build_options();
-
-	HashMap<String, LocalVector<Variant>> settings_openxr = {
-		{ "xr/openxr/enabled", { true } },
-	};
-	build_option_settings.insert(BUILD_OPTION_OPENXR, settings_openxr);
 
 	HashMap<String, LocalVector<Variant>> settings_wayland = {
 		{ "display/display_server/driver.linuxbsd", { "default", "wayland" } },
@@ -732,11 +687,6 @@ EditorBuildProfile::EditorBuildProfile() {
 		{ "rendering/rendering_device/fallback_to_opengl3", { true } },
 	};
 	build_option_settings.insert(BUILD_OPTION_OPENGL, settings_opengl);
-
-	HashMap<String, LocalVector<Variant>> settings_phy_godot_3d = {
-		{ "physics/3d/physics_engine", { "DEFAULT", PhysicsServer3DManager::GODOT_PHYSICS_3D_NAME } },
-	};
-	build_option_settings.insert(BUILD_OPTION_PHYSICS_GODOT_3D, settings_phy_godot_3d);
 
 	HashMap<String, LocalVector<Variant>> settings_jolt = {
 		{ "physics/3d/physics_engine", { PhysicsServer3DManager::JOLT_PHYSICS_NAME } },
@@ -808,9 +758,6 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 
 		case ACTION_DETECT: {
 			String text = TTR("This will scan all files in the current project to detect used classes.\nNote that the first scan may take a while, specially in larger projects.");
-#ifdef MODULE_MONO_ENABLED
-			text += "\n\n" + TTR("Warning: Class detection for C# scripts is not currently available, and such files will be ignored.");
-#endif // MODULE_MONO_ENABLED
 			confirm_dialog->set_text(text);
 			confirm_dialog->popup_centered();
 		} break;

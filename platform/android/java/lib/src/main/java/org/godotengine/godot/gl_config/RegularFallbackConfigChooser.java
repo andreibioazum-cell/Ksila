@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  RegularFallbackConfigChooser.java                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,44 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+package org.godotengine.godot.gl_config;
 
-#include "jolt_globals.h"
-#include "jolt_physics_server_3d.h"
-#include "jolt_project_settings.h"
+import android.util.Log;
 
-#include "core/config/project_settings.h"
-#include "core/object/callable_mp.h"
-#include "servers/physics_3d/physics_server_3d_manager.h"
-#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLDisplay;
 
-PhysicsServer3D *create_jolt_physics_server() {
-#ifdef THREADS_ENABLED
-	bool run_on_separate_thread = GLOBAL_GET("physics/3d/run_on_separate_thread");
-#else
-	bool run_on_separate_thread = false;
-#endif
+/* Fallback if the requested configuration is not supported */
+public class RegularFallbackConfigChooser extends RegularConfigChooser {
+	private static final String TAG = RegularFallbackConfigChooser.class.getSimpleName();
 
-	JoltPhysicsServer3D *physics_server = memnew(JoltPhysicsServer3D(run_on_separate_thread));
+	private RegularConfigChooser fallback;
 
-	return memnew(PhysicsServer3DWrapMT(physics_server, run_on_separate_thread));
-}
-
-void initialize_jolt_physics_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
+	public RegularFallbackConfigChooser(int r, int g, int b, int a, int depth, int stencil, RegularConfigChooser fallback) {
+		super(r, g, b, a, depth, stencil);
+		this.fallback = fallback;
 	}
 
-	jolt_initialize();
-	PhysicsServer3DManager::get_singleton()->register_server(PhysicsServer3DManager::JOLT_PHYSICS_NAME, callable_mp_static(&create_jolt_physics_server));
-	PhysicsServer3DManager::get_singleton()->set_default_server(PhysicsServer3DManager::JOLT_PHYSICS_NAME);
-	JoltProjectSettings::register_settings();
-}
-
-void uninitialize_jolt_physics_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
+	@Override
+	public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display, EGLConfig[] configs) {
+		EGLConfig ec = super.chooseConfig(egl, display, configs);
+		if (ec == null) {
+			Log.w(TAG, "Trying ConfigChooser fallback");
+			ec = fallback.chooseConfig(egl, display, configs);
+		}
+		return ec;
 	}
-
-	jolt_deinitialize();
 }
