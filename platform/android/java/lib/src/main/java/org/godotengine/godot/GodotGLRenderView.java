@@ -33,10 +33,10 @@ package org.godotengine.godot;
 import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.gl.GodotRenderer;
-import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.gl_config.RegularConfigChooser;
 import org.godotengine.godot.gl_config.RegularContextFactory;
 import org.godotengine.godot.gl_config.RegularFallbackConfigChooser;
+import org.godotengine.godot.input.GodotInputHandler;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;

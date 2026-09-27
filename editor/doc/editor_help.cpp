@@ -5214,7 +5214,6 @@ void EditorHelpHighlighter::clear_cache() {
 	highlight_data_caches[LANGUAGE_GDSCRIPT].clear();
 	text_edits[LANGUAGE_GDSCRIPT]->add_theme_color_override(SceneStringName(font_color), text_color);
 #endif
-
 }
 
 EditorHelpHighlighter::EditorHelpHighlighter() {
@@ -5236,14 +5235,12 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 	scripts[LANGUAGE_GDSCRIPT] = gdscript;
 	highlighters[LANGUAGE_GDSCRIPT] = gdscript_highlighter;
 #endif
-
 }
 
 EditorHelpHighlighter::~EditorHelpHighlighter() {
 #ifdef MODULE_GDSCRIPT_ENABLED
 	memdelete(text_edits[LANGUAGE_GDSCRIPT]);
 #endif
-
 }
 
 /// FindBar ///

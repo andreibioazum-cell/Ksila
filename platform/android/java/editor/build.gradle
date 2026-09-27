@@ -204,4 +204,3 @@ dependencies {
     androidTestImplementation "androidx.test:runner:$versions.testRunnerVersion"
     androidTestUtil "androidx.test:orchestrator:$versions.testOrchestratorVersion"
 }
-
