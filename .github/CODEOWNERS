@@ -104,13 +104,6 @@
 /modules/dds/                                 @godotengine/asset-pipeline
 /modules/dds/tests/                           @godotengine/asset-pipeline @godotengine/tests
 /modules/etcpak/                              @godotengine/asset-pipeline
-/modules/fbx/                                 @godotengine/asset-pipeline
-/modules/fbx/doc_classes/                     @godotengine/asset-pipeline @godotengine/documentation
-/modules/fbx/editor/                          @godotengine/asset-pipeline @godotengine/editor
-/modules/gltf/                                @godotengine/asset-pipeline
-/modules/gltf/doc_classes/                    @godotengine/asset-pipeline @godotengine/documentation
-/modules/gltf/editor/                         @godotengine/asset-pipeline @godotengine/editor
-/modules/gltf/tests/                          @godotengine/asset-pipeline @godotengine/tests
 /modules/hdr/                                 @godotengine/asset-pipeline
 /modules/jpg/                                 @godotengine/asset-pipeline
 /modules/ktx/                                 @godotengine/asset-pipeline

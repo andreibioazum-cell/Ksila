@@ -399,12 +399,6 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "find_variation", 1149405976, 1851767612 },
 	#endif
 	});
-	mappings.insert("GLTFDocument", {
-		{ "append_from_file", 1862991421, 866380864 },
-		{ "append_from_buffer", 2818062664, 1616081266 },
-		{ "append_from_scene", 374125375, 1622574258 },
-		{ "generate_scene", 2770277081, 596118388 },
-	});
 	mappings.insert("Geometry2D", {
 		{ "offset_polygon", 3837618924, 1275354010 },
 		{ "offset_polyline", 328033063, 2328231778 },
