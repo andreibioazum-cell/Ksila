@@ -881,7 +881,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		if (vp->use_xr && xr_interface.is_valid()) {
 			// Inform XR interface we're about to render its viewport,
 			// if this returns false we don't render.
-			// This usually is a result of the player taking off their headset and OpenXR telling us to skip
+			// This usually is a result of the player taking off their headset and the XR runtime telling us to skip
 			// rendering frames.
 			if (xr_interface->pre_draw_viewport(vp->render_target)) {
 				RSG::texture_storage->render_target_set_override(vp->render_target,

@@ -2287,19 +2287,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 }
 
 bool EditorExportPlatformAppleEmbedded::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
-#if defined(MODULE_MONO_ENABLED) && !defined(MACOS_ENABLED)
-	// TODO: Remove this restriction when we don't rely on macOS tools to package up the native libraries anymore.
-	r_error += TTR("Exporting to an Apple Embedded platform when using C#/.NET is experimental and requires macOS.") + "\n";
-	return false;
-#else
-
 	String err;
 	bool valid = false;
 
-#if defined(MODULE_MONO_ENABLED)
-	// Apple Embedded export is still a work in progress, keep a message as a warning.
-	err += TTR("Exporting to an Apple Embedded platform when using C#/.NET is experimental.") + "\n";
-#endif
 	// Look for export templates (first official, and if defined custom templates).
 
 	bool dvalid = exists_export_template(get_platform_name() + ".zip", &err);
@@ -2354,7 +2344,6 @@ bool EditorExportPlatformAppleEmbedded::has_valid_export_configuration(const Ref
 	}
 
 	return valid;
-#endif // !(MODULE_MONO_ENABLED && !MACOS_ENABLED)
 }
 
 Error EditorExportPlatformAppleEmbedded::_export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) {

@@ -38,8 +38,8 @@
 			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Creates a new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
-				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
-				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature.
+				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature.
 			</description>
 		</method>
 		<method name="draw_hex_code_box" qualifiers="const">
@@ -1891,7 +1891,7 @@
 			<param index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<description>
 				Sets desired text direction. If set to [constant DIRECTION_AUTO], direction will be detected based on the buffer contents and current locale.
-				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature.
 			</description>
 		</method>
 		<method name="shaped_text_set_orientation">
@@ -1900,7 +1900,7 @@
 			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Sets desired text orientation.
-				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature.
 			</description>
 		</method>
 		<method name="shaped_text_set_preserve_control">
@@ -2005,7 +2005,7 @@
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Returns the string converted to [code]lowercase[/code].
-				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature.
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
 		</method>
@@ -2015,7 +2015,7 @@
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Returns the string converted to [code]Title Case[/code].
-				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature.
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
 		</method>
@@ -2025,7 +2025,7 @@
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Returns the string converted to [code]UPPERCASE[/code].
-				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature.
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
 		</method>

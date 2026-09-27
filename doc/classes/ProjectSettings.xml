@@ -959,9 +959,6 @@
 		<member name="display/display_server/driver.macos" type="String" setter="" getter="">
 			MacOS override for [member display/display_server/driver].
 		</member>
-		<member name="display/display_server/driver.visionos" type="String" setter="" getter="">
-			visionOS override for [member display/display_server/driver].
-		</member>
 		<member name="display/display_server/driver.windows" type="String" setter="" getter="">
 			Windows override for [member display/display_server/driver].
 		</member>
@@ -983,7 +980,6 @@
 		</member>
 		<member name="display/window/frame_pacing/android/enable_frame_pacing" type="bool" setter="" getter="" default="true">
 			Enable Swappy for stable frame pacing on Android. Highly recommended.
-			[b]Note:[/b] This option will be forced off when using OpenXR.
 		</member>
 		<member name="display/window/frame_pacing/android/swappy_mode" type="int" setter="" getter="" default="2" keywords="pipeline">
 			Swappy mode to use. The options are:
@@ -1126,16 +1122,6 @@
 			V-Sync can be disabled on the command line using the [code]--disable-vsync[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			[b]Note:[/b] The [b]Adaptive[/b] and [b]Mailbox[/b] V-Sync modes are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			[b]Note:[/b] This property is only read when the project starts. To change the V-Sync mode at runtime, call [method DisplayServer.window_set_vsync_mode] instead.
-		</member>
-		<member name="dotnet/project/assembly_name" type="String" setter="" getter="" default="&quot;&quot;">
-			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
-		</member>
-		<member name="dotnet/project/assembly_reload_attempts" type="int" setter="" getter="" default="3">
-			Number of times to attempt assembly reloading after rebuilding .NET assemblies. Effectively also the timeout in seconds to wait for unloading of script assemblies to finish.
-		</member>
-		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
-			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
-			Change this value to set up a multi-project scenario where there are multiple [code].csproj[/code] files. Keep in mind that the Godot project is considered one of the C# projects in the workspace and its root directory should contain the [code]project.godot[/code] and [code].csproj[/code] files next to each other.
 		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resource ([code]tres[/code]) and text scene ([code]tscn[/code]) files are converted to their corresponding binary format on export. This decreases file sizes and speeds up loading slightly.
@@ -1810,7 +1796,7 @@
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
-			"ICU / HarfBuzz / Graphite" ([TextServerAdvanced]) is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc.). The "Fallback" text driver ([TextServerFallback]) does not support right-to-left typesetting and complex scripts.
+			The "Fallback" text driver ([TextServerFallback]) does not support right-to-left typesetting and complex scripts.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
@@ -2592,11 +2578,9 @@
 		</member>
 		<member name="physics/2d/sleep_threshold_linear" type="float" setter="" getter="" default="2.0">
 			Threshold linear velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This project setting is ignored when using Jolt Physics.
 		</member>
 		<member name="physics/2d/solver/contact_max_allowed_penetration" type="float" setter="" getter="" default="0.3">
 			Maximum distance a shape can penetrate another shape before it is considered a collision. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION].
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This project setting is ignored when using Jolt Physics.
 		</member>
 		<member name="physics/2d/solver/contact_max_separation" type="float" setter="" getter="" default="1.5">
 			Maximum distance a shape can be from another before they are considered separated and the contact is discarded. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_MAX_SEPARATION].
@@ -2660,11 +2644,10 @@
 			During each physics tick, Godot will multiply the linear velocity of RigidBodies by [code]1.0 - combined_damp / physics_ticks_per_second[/code]. By default, bodies combine damp factors: [code]combined_damp[/code] is the sum of the damp value of the body and this value or the area's value the body is in. See [enum RigidBody3D.DampMode].
 			[b]Warning:[/b] Godot's damping calculations are simulation tick rate dependent. Changing [member physics/common/physics_ticks_per_second] may significantly change the outcomes and feel of your simulation. This is true for the entire range of damping values greater than 0. To get back to a similar feel, you also need to change your damp values. This needed change is not proportional and differs from case to case.
 		</member>
-		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;" keywords="godotphysics, jolt">
+		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;" keywords="jolt">
 			Sets which physics engine to use for 3D physics.
-			[b]DEFAULT[/b] is currently equivalent to [b]GodotPhysics3D[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
-			[b]GodotPhysics3D[/b] is Godot's internal 3D physics engine.
-			[b]Jolt Physics[/b] is an alternative physics engine that is generally faster and more reliable than [b]GodotPhysics3D[/b]. Jolt Physics is the default for projects created starting in Godot 4.6.
+			[b]DEFAULT[/b] is currently equivalent to [b]Jolt Physics[/b], but may change in future releases. Select an explicit implementation if you want to ensure that your project stays on the same engine.
+			[b]Jolt Physics[/b] is Godot's 3D physics engine. It is generally fast and reliable, and is the default for projects created starting in Godot 4.6.
 			[b]Dummy[/b] is a 3D physics server that does nothing and returns only dummy values, effectively disabling all 3D physics functionality.
 			Third-party extensions and modules can add other physics engines to select with this setting.
 		</member>
@@ -2680,36 +2663,36 @@
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.13962634">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
-			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
+			[b]Note:[/b] This project setting has no effect, as it is not supported by Jolt Physics.
 		</member>
 		<member name="physics/3d/sleep_threshold_linear" type="float" setter="" getter="" default="0.1">
 			Threshold linear velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
-			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
+			[b]Note:[/b] This project setting has no effect, as it is not supported by Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/contact_max_allowed_penetration" type="float" setter="" getter="" default="0.01">
 			Maximum distance a shape can penetrate another shape before it is considered a collision. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION].
-			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
+			[b]Note:[/b] This project setting has no effect, as it is not supported by Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/contact_max_separation" type="float" setter="" getter="" default="0.05">
 			Maximum distance a shape can be from another before they are considered separated and the contact is discarded. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_MAX_SEPARATION].
-			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
+			[b]Note:[/b] This project setting has no effect, as it is not supported by Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/contact_recycle_radius" type="float" setter="" getter="" default="0.01">
 			Maximum distance a pair of bodies has to move before their collision status has to be recalculated. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_RECYCLE_RADIUS].
-			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
+			[b]Note:[/b] This project setting has no effect, as it is not supported by Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/default_contact_bias" type="float" setter="" getter="" default="0.8">
 			Default solver bias for all physics contacts. Defines how much bodies react to enforce contact separation. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_DEFAULT_BIAS].
 			Individual shapes can have a specific bias value (see [member Shape3D.custom_solver_bias]).
-			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
+			[b]Note:[/b] This project setting has no effect, as it is not supported by Jolt Physics.
 		</member>
 		<member name="physics/3d/solver/solver_iterations" type="int" setter="" getter="" default="16">
 			Number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS].
-			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
+			[b]Note:[/b] This project setting has no effect, as it is not supported by Jolt Physics.
 		</member>
 		<member name="physics/3d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 3D physics body will put to sleep. See [constant PhysicsServer3D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
-			[b]Note:[/b] This project setting is only effective when using GodotPhysics3D. It has no effect when using Jolt Physics.
+			[b]Note:[/b] This project setting has no effect, as it is not supported by Jolt Physics.
 		</member>
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.
@@ -3390,11 +3373,6 @@
 			- [code]metal[/code] (default), Metal from native drivers, only supported on Apple Silicon Macs. On Intel Macs, it will automatically fall back to [code]vulkan[/code] as Metal support is not implemented.
 			- [code]vulkan[/code], Vulkan over Metal via MoltenVK, supported on both Apple Silicon and Intel Macs.
 		</member>
-		<member name="rendering/rendering_device/driver.visionos" type="String" setter="" getter="" default="&quot;metal&quot;">
-			visionOS override for [member rendering/rendering_device/driver].
-			Only one option is supported:
-			- [code]metal[/code] (default), Metal from native drivers.
-		</member>
 		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Windows override for [member rendering/rendering_device/driver].
 			Two options are supported:
@@ -3618,162 +3596,8 @@
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
 			Maximum number of threads to be used by [WorkerThreadPool]. On Web, a value of [code]-1[/code] means [code]1[/code]. On other platforms, it means all [i]logical[/i] CPU cores available (see [method OS.get_processor_count]).
 		</member>
-		<member name="xr/openxr/binding_modifiers/analog_threshold" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables the analog threshold binding modifier if supported by the XR runtime.
-		</member>
-		<member name="xr/openxr/binding_modifiers/dpad_binding" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables the D-pad binding modifier if supported by the XR runtime.
-		</member>
-		<member name="xr/openxr/create_default_foveated_inset_viewport" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], and [member xr/openxr/view_configuration] is set to [code]Stereo with Foveated Inset[/code], and foveated inset is supported, Godot will add and configure an [OpenXRFoveatedInsetViewport] node for rendering the foveated inset.
-		</member>
-		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
-			Action map configuration to load by default.
-		</member>
-		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], Godot will setup and initialize OpenXR on startup.
-		</member>
-		<member name="xr/openxr/environment_blend_mode" type="int" setter="" getter="" default="&quot;0&quot;">
-			Specify how OpenXR should blend in the environment. This is specific to certain AR and passthrough devices where camera images are blended in by the XR compositor.
-		</member>
-		<member name="xr/openxr/extensions/debug_message_types" type="int" setter="" getter="" default="&quot;15&quot;">
-			Specifies the message types for which we request debug messages. Requires [member xr/openxr/extensions/debug_utils] to be set and the extension to be supported by the XR runtime.
-		</member>
-		<member name="xr/openxr/extensions/debug_utils" type="int" setter="" getter="" default="&quot;0&quot;">
-			Enables debug utilities on XR runtimes that supports the debug utils extension. Sets the maximum severity being reported (0 = disabled, 1 = error, 2 = warning, 3 = info, 4 = verbose).
-		</member>
-		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
-			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
-		</member>
-		<member name="xr/openxr/extensions/frame_synthesis" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] the frame synthesis extension will be activated if supported by the platform.
-			[b]Note:[/b] This feature should not be enabled in conjunction with Application Space Warp, if supported this replaces ASW.
-		</member>
-		<member name="xr/openxr/extensions/frame_synthesis/flip_y" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] the Y value of the motion vectors submitted to the frame synthesis extension will be flipped.
-			[b]Note:[/b] Since this is only needed on some platforms, it should usually be set using a feature tag, for example, to target Android XR: [code]xr/openxr/extensions/frame_synthesis/flip_y.androidxr[/code]
-		</member>
-		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.
-		</member>
-		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the hand tracking extension is enabled if available.
-			[b]Note:[/b] By default hand tracking will only work for data sources chosen by the XR runtime. For SteamVR this is the controller inferred data source, for most other runtimes this is the unobstructed data source. There is no way to query this. If a runtime supports the OpenXR data source extension you can use the [member xr/openxr/extensions/hand_tracking_controller_data_source] and/or [member xr/openxr/extensions/hand_tracking_unobstructed_data_source] to indicate you wish to enable these data sources. If neither is selected the data source extension is not enabled and the XR runtimes default behavior persists.
-		</member>
-		<member name="xr/openxr/extensions/hand_tracking_controller_data_source" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], support for the controller inferred data source is requested. If supported, you will receive hand tracking data even if the user has a controller in hand, with finger positions automatically inferred from controller input and/or sensors.
-			[b]Note:[/b] This requires the OpenXR data source extension and controller inferred handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
-		</member>
-		<member name="xr/openxr/extensions/hand_tracking_unobstructed_data_source" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], support for the unobstructed data source is requested. If supported, you will receive hand tracking data based on the actual finger positions of the user often determined by optical tracking.
-			[b]Note:[/b] This requires the OpenXR data source extension and unobstructed handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
-		</member>
-		<member name="xr/openxr/extensions/render_model" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] we enable the render model extension if available.
-			[b]Note:[/b] This relates to the core OpenXR render model extension and has no relation to any vendor render model extensions.
-		</member>
-		<member name="xr/openxr/extensions/spatial_container/bounds" type="Vector3" setter="" getter="" default="Vector3(0.5, 0.5, 0.5)">
-			Specifies the starting bounds for the main spatial container, in meters.
-		</member>
-		<member name="xr/openxr/extensions/spatial_container/bounds_mode" type="int" setter="" getter="" default="&quot;0&quot;">
-			Specifies the bounds mode, [code]bounded[/code] or [code]immersive[/code], for the main spatial container.
-		</member>
-		<member name="xr/openxr/extensions/spatial_container/enabled" type="bool" setter="" getter="" default="false">
-			Enables the spatial container extension.
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], we enable the built-in logic for handling anchors. Godot will query (persistent) anchors and manage [OpenXRAnchorTracker] instances for you. If disabled you'll need to create your own spatial and persistence context and perform your own discovery queries.
-			[b]Note:[/b] This functionality requires that spatial anchors are supported and enabled.
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_plane_detection" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], we enable the built-in logic for handling plane detection. Godot will query detected planes (walls, floors, ceilings, etc.) and manage [OpenXRPlaneTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
-			[b]Note:[/b] This functionality requires that plane tracking is supported and enabled.
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/enable_persistent_anchors" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], support for the persistent anchors extension is requested. If supported, you will be able to store spatial anchors and they will be restored on application startup.
-			[b]Note:[/b] This requires that the OpenXR spatial entities, spatial anchors, and spatial persistence extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] and [member xr/openxr/extensions/spatial_entity/enable_spatial_anchors] must be enabled for this setting to be used.
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/enable_plane_tracking" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], support for the plane tracking extension is requested. If supported, you will be able to query information about planes detected by the XR runtime, e.g. walls, floors, etc.
-			[b]Note:[/b] This requires that the OpenXR spatial entities and plane tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/enable_spatial_anchors" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], support for the spatial anchors extension is requested. If supported, you will be able to register anchor locations in the real world that the XR runtime will adjust as needed and/or potentially share with other headsets.
-			[b]Note:[/b] This requires that the OpenXR spatial entities and spatial anchors extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/enabled" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], support for the spatial entity extension is requested. If supported, you will be able to access spatial information about the real environment around you. What information is available is dependent on additional extensions.
-			[b]Note:[/b] This requires that the OpenXR spatial entities extension is supported by the XR runtime. If not supported this setting will be ignored.
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/marker_tracking/april_tag_dict" type="int" setter="" getter="" default="&quot;3&quot;">
-			The April Tag marker type the built-in marker tracking is set to recognize (if April Tag marker tracking is available and enabled).
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/marker_tracking/aruco_dict" type="int" setter="" getter="" default="&quot;15&quot;">
-			The ArUco marker type the built-in marker tracking is set to recognize (if ArUco marker tracking is available and enabled).
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/marker_tracking/enable" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], support for the marker tracking extension is requested. If supported, you will be able to query information about markers detected by the XR runtime, e.g., QR codes, ArUco markers, and April tags.
-			[b]Note:[/b] This requires that the OpenXR spatial entities and marker tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
-		</member>
-		<member name="xr/openxr/extensions/spatial_entity/marker_tracking/enable_builtin_for_types" type="int" setter="" getter="" default="0">
-			Enables the built-in logic for handling marker tracking for each selected marker type. Godot will query markers and manage [OpenXRMarkerTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
-			[b]Note:[/b] This functionality requires that marker tracking is supported and enabled.
-		</member>
-		<member name="xr/openxr/extensions/user_presence" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the user presence extension is enabled if available.
-		</member>
-		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
-			Specify whether OpenXR should be configured for an HMD or a hand held device.
-		</member>
-		<member name="xr/openxr/foveation_dynamic" type="bool" setter="" getter="" default="false">
-			If [code]true[/code] and foveation is supported, will automatically adjust foveation level based on framerate up to the level set on [member xr/openxr/foveation_level].
-		</member>
-		<member name="xr/openxr/foveation_eye_tracked" type="bool" setter="" getter="" default="true">
-			If [code]true[/code] and foveation level is set to anything other than "Disabled", eye-tracked foveation will be used, so long as it's supported by the headset.
-		</member>
-		<member name="xr/openxr/foveation_level" type="int" setter="" getter="" default="&quot;0&quot;">
-			Applied foveation level if supported.
-			[b]Note:[/b] On platforms other than Android, if [member rendering/anti_aliasing/quality/msaa_3d] is enabled, this feature will be disabled.
-		</member>
-		<member name="xr/openxr/foveation_with_subsampled_images" type="bool" setter="" getter="" default="true">
-			If [code]true[/code] and foveation is also enabled, subsampled images will be used on Vulkan. This can improve the performance gain from foveated rendering, especially when using high foveation levels.
-			[b]Note:[/b] Using subsampled images is incompatible with many screen-space rendering features or post-processing effects like FXAA or glow. If any such effects are enabled, subsampled images will automatically be disabled and a warning shown in the log.
-		</member>
-		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
-			Specify the default reference space.
-		</member>
-		<member name="xr/openxr/startup_alert" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], Godot will display an alert modal when OpenXR initialization fails on startup.
-		</member>
-		<member name="xr/openxr/submit_depth_buffer" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], OpenXR will manage the depth buffer and use the depth buffer for advanced reprojection provided this is supported by the XR runtime. Note that some rendering features in Godot can't be used with this feature.
-		</member>
-		<member name="xr/openxr/target_api_version" type="String" setter="" getter="" default="&quot;&quot;">
-			Optionally sets a specific API version of OpenXR to initialize in [code]major.minor.patch[/code] notation. Some XR runtimes gate old behavior behind version checks. This is non-standard OpenXR behavior.
-		</member>
-		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;" keywords="mono, stereo">
-			Specify the view configuration with which to configure OpenXR setting up either Mono or Stereo rendering.
-		</member>
 		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will compile shaders required for XR.
-		</member>
-		<member name="xr/visionos/dynamic_render_quality/enable" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables Dynamic Render Quality for the visionOS XR module. If enabled, you can dynamically set the render quality according to the complexity of your rendered scene. Higher render qualities increase the resolution of the textures provided by the visionOS XR module.
-		</member>
-		<member name="xr/visionos/dynamic_render_quality/maximum_quality" type="float" setter="" getter="" default="0.38">
-			Set this value to the minimum value that makes sense for your app. The supported range is from [code]0.0[/code] (exclusive) to [code]1.0[/code] (inclusive). Setting a maximum render quality that you never use at runtime will use more memory than necessary.
-		</member>
-		<member name="xr/visionos/enable_controller_tracking" type="bool" setter="" getter="" default="false">
-			Enables and initializes visionOS controller tracking.
-		</member>
-		<member name="xr/visionos/enable_hand_tracking" type="bool" setter="" getter="" default="false">
-			Enables and initializes visionOS hand tracking.
-		</member>
-		<member name="xr/visionos/persistent_system_overlays" type="int" setter="" getter="" default="0">
-			Initial visibility of the system overlays, such as the Home indicator, for the visionOS XR module's immersive scene. Change it at runtime with [member VisionOSXRInterface.persistent_system_overlays]. See [url=https://developer.apple.com/documentation/swiftui/view/persistentsystemoverlays(_:)]persistentSystemOverlays(_:)[/url].
-		</member>
-		<member name="xr/visionos/upper_limb_visibility" type="int" setter="" getter="" default="0">
-			Initial visibility of the user's upper limbs for the visionOS XR module's immersive scene. Change it at runtime with [member VisionOSXRInterface.upper_limb_visibility]. See [url=https://developer.apple.com/documentation/swiftui/scene/upperlimbvisibility(_:)]upperLimbVisibility(_:)[/url].
 		</member>
 	</members>
 	<signals>

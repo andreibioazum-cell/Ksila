@@ -21,7 +21,7 @@
 		update_map_data_from_image(heightmap_image, height_min, height_max)
 		[/gdscript]
 		[/codeblocks]
-		[b]Note:[/b] If you need to use a spacing different than 1 unit, you can adjust the [member Node3D.scale] of the shape. However, keep in mind that GodotPhysics3D does not support non-uniform scaling: you'll need to scale the Y axis by the same amount as the X and Z axes, which means the values in [member map_data] will need to be pre-scaled by the inverse of that scale. Also note that GodotPhysics3D does not support scaling at all for dynamic bodies (that is, non-frozen [RigidBody3D] nodes); to use a scaled [HeightMapShape3D] with those, you will need to use Jolt Physics.
+		[b]Note:[/b] If you need to use a spacing different than 1 unit, you can adjust the [member Node3D.scale] of the shape.
 	</description>
 	<tutorials>
 	</tutorials>

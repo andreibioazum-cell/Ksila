@@ -32,9 +32,9 @@
 
 TEST_FORCE_LINK(test_label)
 
-#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. Needed for MODULE_TEXT_SERVER_FB_ENABLED and MODULE_TEXT_SERVER_ADV_ENABLED definitions.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. Needed for MODULE_TEXT_SERVER_FB_ENABLED definition.
 
-#if defined(MODULE_TEXT_SERVER_FB_ENABLED) || defined(MODULE_TEXT_SERVER_ADV_ENABLED)
+#if defined(MODULE_TEXT_SERVER_FB_ENABLED)
 
 #include "scene/gui/label.h"
 #include "scene/main/scene_tree.h"
@@ -260,4 +260,4 @@ TEST_CASE("[SceneTree][Label] Sizing") {
 
 } // namespace TestLabel
 
-#endif // MODULE_TEXT_SERVER_FB_ENABLED || MODULE_TEXT_SERVER_ADV_ENABLED
+#endif // MODULE_TEXT_SERVER_FB_ENABLED

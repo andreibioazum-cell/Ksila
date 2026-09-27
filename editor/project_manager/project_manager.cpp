@@ -330,7 +330,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		}
 	}
 
-#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+#ifdef MODULE_GDSCRIPT_ENABLED
 	EditorHelpHighlighter::get_singleton()->clear_cache();
 #endif
 
@@ -1514,7 +1514,7 @@ ProjectManager::ProjectManager() {
 		OS::get_singleton()->set_low_processor_usage_mode(true);
 	}
 
-#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+#ifdef MODULE_GDSCRIPT_ENABLED
 	EditorHelpHighlighter::create_singleton();
 #endif
 
@@ -2115,7 +2115,7 @@ ProjectManager::~ProjectManager() {
 
 	EditorHelp::cleanup_doc();
 
-#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+#ifdef MODULE_GDSCRIPT_ENABLED
 	EditorHelpHighlighter::free_singleton();
 #endif
 

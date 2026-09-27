@@ -132,13 +132,13 @@ repos:
         name: eslint
         language: node
         entry: eslint
-        files: ^(platform/web/js/|modules/|misc/dist/html/).*\.(js|html)$
+        files: ^(modules/|misc/dist/html/).*\.(js|html)$
         args:
           - --fix
           - --no-warn-ignored
           - --no-config-lookup
           - --config
-          - platform/web/eslint.config.cjs
+          - misc/eslint.config.cjs
         additional_dependencies:
           - "@eslint/js@^9.12.0"
           - "@html-eslint/eslint-plugin@^0.27.0"
@@ -148,24 +148,6 @@ repos:
           - eslint-plugin-html@^8.2.0
           - espree@^10.4.0
           - globals@^15.15.0
-
-      - id: jsdoc
-        name: jsdoc
-        language: node
-        entry: jsdoc
-        files: ^platform/web/js/engine/(engine|config|features)\.js$
-        args:
-          - --template
-          - platform/web/js/jsdoc2rst/
-          - platform/web/js/engine/engine.js
-          - platform/web/js/engine/config.js
-          - platform/web/js/engine/features.js
-          - --destination
-          - ""
-          - -d
-          - dry-run
-        pass_filenames: false
-        additional_dependencies: [jsdoc@^4.0.3]
 
       - id: svgo
         name: svgo

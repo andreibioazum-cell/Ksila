@@ -654,9 +654,8 @@ EditorRunBar::EditorRunBar() {
 
 	bool add_play_xr_mode_options = false;
 #ifndef XR_DISABLED
-	if (XRServer::get_xr_mode() == XRServer::XRMODE_ON ||
-			(XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT && GLOBAL_GET("xr/openxr/enabled"))) {
-		// If OpenXR is enabled, we turn the `play_scene_button` and
+	if (XRServer::get_xr_mode() == XRServer::XRMODE_ON) {
+		// If XR is enabled, we turn the `play_scene_button` and
 		// `play_custom_scene_button` into MenuButtons to provide the option to start a scene in
 		// either regular mode or XR mode.
 		add_play_xr_mode_options = true;

@@ -58,8 +58,8 @@ class XRServer : public Object {
 public:
 	enum XRMode {
 		XRMODE_DEFAULT, /* Default behavior, means we check project settings */
-		XRMODE_OFF, /* Ignore project settings, disable OpenXR, disable shaders */
-		XRMODE_ON, /* Ignore project settings, enable OpenXR, enable shaders, run editor in VR (if applicable) */
+		XRMODE_OFF, /* Ignore project settings, disable XR, disable shaders */
+		XRMODE_ON, /* Ignore project settings, enable XR, enable shaders, run editor in VR (if applicable) */
 	};
 
 	enum TrackerType {
@@ -224,7 +224,7 @@ public:
 	void _process();
 
 	// Pre-render is called right before we're rendering our viewports.
-	// This is where interfaces such as OpenVR and OpenXR will update positioning data.
+	// This is where XR interfaces will update positioning data.
 	// Many of these interfaces will also do a predictive sync which ensures we run at a steady framerate.
 	void pre_render();
 

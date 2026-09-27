@@ -399,12 +399,6 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "find_variation", 1149405976, 1851767612 },
 	#endif
 	});
-	mappings.insert("GLTFDocument", {
-		{ "append_from_file", 1862991421, 866380864 },
-		{ "append_from_buffer", 2818062664, 1616081266 },
-		{ "append_from_scene", 374125375, 1622574258 },
-		{ "generate_scene", 2770277081, 596118388 },
-	});
 	mappings.insert("Geometry2D", {
 		{ "offset_polygon", 3837618924, 1275354010 },
 		{ "offset_polyline", 328033063, 2328231778 },
@@ -553,9 +547,6 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "connect", 1469446357, 1518946055 },
 		{ "tr", 2475554935, 1195764410 },
 		{ "tr_n", 4021311862, 162698058 },
-	});
-	mappings.insert("OpenXRAPIExtension", {
-		{ "transform_from_pose", 3255299855, 2963875352 },
 	});
 	mappings.insert("OptionButton", {
 		{ "add_item", 3043792800, 2697778442 },

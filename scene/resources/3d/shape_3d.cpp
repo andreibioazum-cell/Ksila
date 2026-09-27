@@ -153,9 +153,9 @@ void Shape3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_STORAGE;
 	}
 
-	if (p_property.name == "margin" && GLOBAL_GET(PhysicsServer3DManager::setting_property_name) == PhysicsServer3DManager::GODOT_PHYSICS_3D_NAME) {
-		// This property is not used by GodotPhysics3D. Hide it from the editor to avoid confusion.
-		// Third-party physics engines may make use of this property, so we leave it visible for those.
+	if (p_property.name == "margin") {
+		// This property is not used by Jolt Physics (the only available 3D physics engine).
+		// Hide it from the editor to avoid confusion.
 		p_property.usage = PROPERTY_USAGE_STORAGE;
 	}
 }

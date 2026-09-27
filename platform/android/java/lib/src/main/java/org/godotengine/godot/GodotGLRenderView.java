@@ -33,14 +33,10 @@ package org.godotengine.godot;
 import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.gl.GodotRenderer;
+import org.godotengine.godot.gl_config.RegularConfigChooser;
+import org.godotengine.godot.gl_config.RegularContextFactory;
+import org.godotengine.godot.gl_config.RegularFallbackConfigChooser;
 import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.xr.XRMode;
-import org.godotengine.godot.xr.ovr.OvrConfigChooser;
-import org.godotengine.godot.xr.ovr.OvrContextFactory;
-import org.godotengine.godot.xr.ovr.OvrWindowSurfaceFactory;
-import org.godotengine.godot.xr.regular.RegularConfigChooser;
-import org.godotengine.godot.xr.regular.RegularContextFactory;
-import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
 
 import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
@@ -88,7 +84,7 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final AccessibilityNodeProvider accessibilityNodeProvider;
 	private final long mWindowID = 0; // DisplayServerEnums::MAIN_WINDOW_ID
 
-	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
+	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, boolean useDebugOpengl, boolean shouldBeTranslucent) {
 		super(godot.getContext());
 		if (GodotLib.createAccessKitAdapter(mWindowID)) {
 			accessibilityNodeProvider = new AccessibilityNodeProvider() {
@@ -113,7 +109,7 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
-		init(xrMode, shouldBeTranslucent, useDebugOpengl);
+		init(shouldBeTranslucent, useDebugOpengl);
 	}
 
 	@Override
@@ -290,48 +286,33 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 		return getPointerIcon();
 	}
 
-	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl) {
+	private void init(boolean translucent, boolean useDebugOpengl) {
 		setPreserveEGLContextOnPause(true);
 		setFocusableInTouchMode(true);
-		switch (xrMode) {
-			case OPENXR:
-				// Replace the default egl config chooser.
-				setEGLConfigChooser(new OvrConfigChooser());
 
-				// Replace the default context factory.
-				setEGLContextFactory(new OvrContextFactory());
-
-				// Replace the default window surface factory.
-				setEGLWindowSurfaceFactory(new OvrWindowSurfaceFactory());
-				break;
-
-			case REGULAR:
-			default:
-				/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
-				 * If we want a translucent one, we should change the surface's
-				 * format here, using PixelFormat.TRANSLUCENT for GL Surfaces
-				 * is interpreted as any 32-bit surface with alpha by SurfaceFlinger.
-				 */
-				if (translucent) {
-					this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-				}
-
-				/* Setup the context factory for 2.0 rendering.
-				 * See ContextFactory class definition below
-				 */
-				setEGLContextFactory(new RegularContextFactory(useDebugOpengl));
-
-				/* We need to choose an EGLConfig that matches the format of
-				 * our surface exactly. This is going to be done in our
-				 * custom config chooser. See ConfigChooser class definition
-				 * below.
-				 */
-
-				setEGLConfigChooser(
-						new RegularFallbackConfigChooser(8, 8, 8, 8, 24, 0,
-								new RegularConfigChooser(8, 8, 8, 8, 16, 0)));
-				break;
+		/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
+		 * If we want a translucent one, we should change the surface's
+		 * format here, using PixelFormat.TRANSLUCENT for GL Surfaces
+		 * is interpreted as any 32-bit surface with alpha by SurfaceFlinger.
+		 */
+		if (translucent) {
+			this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 		}
+
+		/* Setup the context factory for 2.0 rendering.
+		 * See ContextFactory class definition below
+		 */
+		setEGLContextFactory(new RegularContextFactory(useDebugOpengl));
+
+		/* We need to choose an EGLConfig that matches the format of
+		 * our surface exactly. This is going to be done in our
+		 * custom config chooser. See ConfigChooser class definition
+		 * below.
+		 */
+
+		setEGLConfigChooser(
+				new RegularFallbackConfigChooser(8, 8, 8, 8, 24, 0,
+						new RegularConfigChooser(8, 8, 8, 8, 16, 0)));
 	}
 
 	@Override
