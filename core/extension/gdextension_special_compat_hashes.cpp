@@ -554,9 +554,6 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "tr", 2475554935, 1195764410 },
 		{ "tr_n", 4021311862, 162698058 },
 	});
-	mappings.insert("OpenXRAPIExtension", {
-		{ "transform_from_pose", 3255299855, 2963875352 },
-	});
 	mappings.insert("OptionButton", {
 		{ "add_item", 3043792800, 2697778442 },
 		{ "add_icon_item", 3944051090, 3781678508 },

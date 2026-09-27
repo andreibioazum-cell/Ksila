@@ -103,7 +103,7 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 	false, // PHYSICS_GODOT_2D
 	false, // PHYSICS_3D
 	false, // PHYSICS_JOLT
-	true, // TEXT_SERVER_FALLBACK
+	false, // TEXT_SERVER_FALLBACK
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
 	false, // MSDFGEN
@@ -392,7 +392,6 @@ String EditorBuildProfile::get_build_option_name(BuildOption p_build_option) {
 		TTRC("Accessibility Support (AccessKit)"),
 		TTRC("Improved Gamepad Support (SDL)"),
 		TTRC("XR"),
-		TTRC("OpenXR"),
 		TTRC("Wayland"),
 		TTRC("X11"),
 		TTRC("PulseAudio"),
@@ -407,13 +406,10 @@ String EditorBuildProfile::get_build_option_name(BuildOption p_build_option) {
 		TTRC("Physics Server (2D)"),
 		TTRC("Godot Physics (2D)"),
 		TTRC("Physics Server (3D)"),
-		TTRC("Godot Physics (3D)"),
 		TTRC("Jolt Physics"),
 		TTRC("Text Server: Fallback"),
-		TTRC("Text Server: Advanced"),
 		TTRC("TTF, OTF, Type 1, WOFF1 Fonts"),
 		TTRC("WOFF2 Fonts"),
-		TTRC("SIL Graphite Fonts"),
 		TTRC("Multi-channel Signed Distance Field Font Rendering"),
 	};
 	return TTR(build_option_names[p_build_option]);
@@ -430,7 +426,6 @@ String EditorBuildProfile::get_build_option_description(BuildOption p_build_opti
 		TTRC("Support for screen readers using the AccessKit library."),
 		TTRC("Improved gamepad support on Windows, macOS, and Linux using the SDL library.\nIf disabled, built-in custom code is used for gamepad support instead, which may be less reliable for certain controller models."),
 		TTRC("XR (AR and VR)."),
-		TTRC("OpenXR standard implementation (requires XR to be enabled)."),
 		TTRC("Wayland display server support (Linux only)."),
 		TTRC("X11 display server support (Linux only)."),
 		TTRC("PulseAudio audio driver (Linux only)."),
@@ -445,13 +440,10 @@ String EditorBuildProfile::get_build_option_description(BuildOption p_build_opti
 		TTRC("PhysicsServer and capabilities for 2D."),
 		TTRC("Godot Physics backend (2D)."),
 		TTRC("PhysicsServer and capabilities for 3D."),
-		TTRC("Godot Physics backend (3D)."),
 		TTRC("Jolt Physics backend (3D only)."),
 		TTRC("Fallback implementation of Text Server\nSupports basic text layouts."),
-		TTRC("Text Server implementation powered by ICU and HarfBuzz libraries.\nSupports complex text layouts, BiDi, and contextual OpenType font features."),
 		TTRC("TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType library (if disabled, WOFF2 support is also disabled)."),
 		TTRC("WOFF2 font format support using FreeType and Brotli libraries."),
-		TTRC("SIL Graphite smart font technology support (supported by Advanced Text Server only)."),
 		TTRC("Multi-channel signed distance field font rendering support using msdfgen library (pre-rendered MSDF fonts can be used even if this option is disabled)."),
 	};
 
@@ -1077,10 +1069,6 @@ void EditorBuildProfileManager::_detect_from_project() {
 		if (!skip && !ignore) {
 			edited->set_disable_build_option(EditorBuildProfile::BuildOption(i), true);
 		}
-	}
-
-	if (edited->is_build_option_disabled(EditorBuildProfile::BUILD_OPTION_TEXT_SERVER_ADVANCED)) {
-		edited->set_disable_build_option(EditorBuildProfile::BUILD_OPTION_TEXT_SERVER_FALLBACK, false);
 	}
 
 	EditorNode::get_singleton()->progress_end_task("detect_classes_from_project");

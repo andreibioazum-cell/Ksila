@@ -255,7 +255,6 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["opengl"] = "OpenGL";
 	capitalize_string_remaps["opengl3"] = "OpenGL 3";
 	capitalize_string_remaps["opentype"] = "OpenType";
-	capitalize_string_remaps["openxr"] = "OpenXR";
 	capitalize_string_remaps["osslsigncode"] = "osslsigncode";
 	capitalize_string_remaps["path3d"] = "Path3D";
 	capitalize_string_remaps["pck"] = "PCK";

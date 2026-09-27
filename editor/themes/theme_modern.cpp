@@ -2969,8 +2969,5 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
 		p_theme->set_constant("margin_bottom", "NoBorderAnimation", -p_theme->get_stylebox(SceneStringName(panel), SNAME("AnimationTrackPanel"))->get_content_margin(SIDE_BOTTOM));
 
-		// Used in the OpenXR action map editor.
-		p_theme->set_type_variation("NoBorderOpenXR", "NoBorderAnimation");
-		p_theme->set_constant("margin_bottom", "NoBorderOpenXR", -panel_margin);
 	}
 }

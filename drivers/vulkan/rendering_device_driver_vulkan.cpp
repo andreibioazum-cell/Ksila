@@ -1917,9 +1917,9 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 
 	if (VulkanHooks::get_singleton() != nullptr) {
 		// Hooks control device creation & possibly presentation
-		// (e.g. OpenXR) thus it's too risky to use Swappy.
+		// (e.g. XR runtimes) thus it's too risky to use Swappy.
 		swappy_frame_pacer_enable = false;
-		OS::get_singleton()->print("VulkanHooks detected (e.g. OpenXR): Force-disabling Swappy Frame Pacing.\n");
+		OS::get_singleton()->print("VulkanHooks detected (e.g. XR runtimes): Force-disabling Swappy Frame Pacing.\n");
 	}
 #endif
 

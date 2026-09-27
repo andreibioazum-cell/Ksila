@@ -56,7 +56,7 @@ public:
 	};
 
 protected:
-	String profile; // this is interface dependent, for OpenXR this will be the interaction profile bound for to the tracker
+	String profile; // this is interface dependent, this will be the interaction profile bound to the tracker
 	TrackerHand tracker_hand = TRACKER_HAND_UNKNOWN; // if known, the hand this tracker is held in
 
 	HashMap<StringName, Ref<XRPose>> poses;
