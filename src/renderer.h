@@ -5,6 +5,12 @@
 // push constants. Supports window resizing and optional 4x MSAA.
 #pragma once
 
+// The NDK's vulkan.h only declares VK_KHR_android_surface (and the
+// vkCreateAndroidSurfaceKHR entry point) when this is defined.
+#if defined(__ANDROID__)
+#define VK_USE_PLATFORM_ANDROID_KHR 1
+#endif
+
 #include <vulkan/vulkan.h>
 
 #include "ui.h"
