@@ -70,6 +70,36 @@ build\Release\ksila.exe
 - `KSILA_GLFW_NULL=ON` — собрать GLFW в headless-режиме (без X11/Wayland;
   окно не откроется, полезно только для сборки)
 
+## Android (APK)
+
+Приложение собирается в CI в APK **без единой строчки Java** — NativeActivity
+(`android.app.NativeActivity`, `hasCode="false"`) + Vulkan через
+`VK_KHR_android_surface`. Тач работает как мышь, кнопка «Назад» — выход.
+
+- **Скачать APK**: [Releases → lobby-latest](../../releases/tag/lobby-latest)
+  (или артефакт `ksila-apk` в последнем запуске [Actions](../../actions))
+- Требуется Android 7.0+ (API 24) с поддержкой Vulkan
+- Внутри: `arm64-v8a` (все современные телефоны) + `x86_64` (эмуляторы)
+- APK подписан debug-ключом из `android/signing/` (для Play Store нужен свой ключ)
+
+Установка: скачайте `Ksila-lobby.apk`, откройте на телефоне и разрешите
+установку из неизвестных источников. Или через adb:
+
+```bash
+adb install Ksila-lobby.apk
+```
+
+Локальная сборка APK (нужны Android SDK + NDK r26+, JDK 17):
+
+```bash
+cmake -B build-android -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/26.3.11579264/build/cmake/android.toolchain.cmake" \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24 -DKSILA_PREBUILT_SHADERS=ON
+cmake --build build-android -j
+bash tools/package_android_apk.sh --out Ksila-lobby.apk \
+  "$(find build-android -name libksila.so -print -quit)=arm64-v8a"
+```
+
 ## Управление
 
 - **Мышь** — наведение и нажатие кнопок

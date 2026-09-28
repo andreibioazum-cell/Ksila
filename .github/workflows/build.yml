@@ -45,6 +45,8 @@ jobs:
   android:
     name: Android APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       NDK_VERSION: "26.3.11579264"
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
@@ -146,3 +148,19 @@ jobs:
         with:
           name: ksila-apk
           path: dist/Ksila-lobby.apk
+
+      - name: Publish APK to GitHub Releases
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete lobby-latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create lobby-latest dist/Ksila-lobby.apk \
+            --target "$GITHUB_SHA" \
+            --title "Ksila Lobby — Android APK" \
+            --notes "Лобби на чистом Vulkan API с кнопками в стиле Godot (Играть / Настройки / Классы).
+
+          Подписан debug-ключом из репозитория. arm64-v8a + x86_64, Android 7.0+ (нужен Vulkan).
+
+          Установка: скачайте APK, откройте на телефоне, разрешите установку из неизвестных источников." \
+            --prerelease
