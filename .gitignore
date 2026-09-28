@@ -16,3 +16,7 @@ Thumbs.db
 # Preview outputs
 *.png
 !docs/*.png
+
+# Python
+__pycache__/
+*.pyc
