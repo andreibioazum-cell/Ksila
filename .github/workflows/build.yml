@@ -79,36 +79,44 @@ jobs:
 
       - name: Build arm64-v8a
         run: |
-          cmake --version | head -1
+          set +e
           cmake -B build-android-arm64 -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/${NDK_VERSION}/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24 -DKSILA_PREBUILT_SHADERS=ON \
-            2>&1 | tee build-arm64.log || true
-          if ! grep -q "Build files have been written" build-arm64.log; then
-            grep -m 10 -iE "error|fatal|not found|CMake Error" build-arm64.log | cut -c1-250 | while IFS= read -r l; do echo "::error::$l"; done
+            2>&1 | tee build-arm64.log
+          if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+            grep -m 10 -iE "error|fatal|not found" build-arm64.log | cut -c1-240 | while IFS= read -r l; do echo "::error::$l"; done
             exit 1
           fi
           cmake --build build-android-arm64 -j"$(nproc)" 2>&1 | tee -a build-arm64.log
           if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-            grep -m 10 -iE "error|fatal|Error [0-9]" build-arm64.log | cut -c1-250 | while IFS= read -r l; do echo "::error::$l"; done
+            grep -m 10 -iE "error:|fatal error|Error [0-9]" build-arm64.log | cut -c1-240 | while IFS= read -r l; do echo "::error::$l"; done
             exit 1
           fi
 
       - name: Build x86_64
         run: |
+          set +e
           cmake -B build-android-x86_64 -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/${NDK_VERSION}/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI=x86_64 -DANDROID_PLATFORM=android-24 -DKSILA_PREBUILT_SHADERS=ON \
-            2>&1 | tee build-x86_64.log || true
-          if ! grep -q "Build files have been written" build-x86_64.log; then
-            grep -m 10 -iE "error|fatal|not found|CMake Error" build-x86_64.log | cut -c1-250 | while IFS= read -r l; do echo "::error::$l"; done
+            2>&1 | tee build-x86_64.log
+          if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+            grep -m 10 -iE "error|fatal|not found" build-x86_64.log | cut -c1-240 | while IFS= read -r l; do echo "::error::$l"; done
             exit 1
           fi
           cmake --build build-android-x86_64 -j"$(nproc)" 2>&1 | tee -a build-x86_64.log
           if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-            grep -m 10 -iE "error|fatal|Error [0-9]" build-x86_64.log | cut -c1-250 | while IFS= read -r l; do echo "::error::$l"; done
+            grep -m 10 -iE "error:|fatal error|Error [0-9]" build-x86_64.log | cut -c1-240 | while IFS= read -r l; do echo "::error::$l"; done
             exit 1
           fi
+
+      - name: Upload build logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-logs
+          path: build-*.log
 
       - name: Package APK
         run: |

@@ -8,7 +8,9 @@
 // the system Back button quits the app.
 
 #include <android/log.h>
-#include <android/native_app_glue/android_native_app_glue.h>
+// The NDK ships this header directly in sources/android/native_app_glue/,
+// which is on the include path via the native_app_glue CMake target.
+#include <android_native_app_glue.h>
 
 #include <chrono>
 #include <cmath>
