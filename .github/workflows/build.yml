@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  ubuntu:
+    name: Ubuntu (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: glslang шейдеры
+            packages: libvulkan-dev libglfw3-dev glslang-tools
+            prebuilt: OFF
+          - name: prebuilt SPIR-V
+            packages: libvulkan-dev libglfw3-dev
+            prebuilt: ON
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.packages }}
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DKSILA_PREBUILT_SHADERS=${{ matrix.prebuilt }}
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Preview screenshot
+        run: |
+          ./build/ksila-preview --out lobby.png
+          ./build/ksila-preview --hover 0 --out hover.png
+          ./build/ksila-preview --focus 2 --out focus.png
+          python3 tools/png_probe.py lobby.png
+          python3 tools/png_probe.py hover.png --hover 0
+          python3 tools/png_probe.py focus.png --focus 2

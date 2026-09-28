@@ -1,76 +1,105 @@
-# Godot Engine
+# Ksila — лобби на Vulkan API
 
-<p align="center">
-  <a href="https://godotengine.org">
-    <img src="misc/logo/logo_outlined.svg" width="400" alt="Godot Engine logo">
-  </a>
-</p>
+Простое игровое лобби на **чистом Vulkan API** (без движка Godot) с кнопками в
+стиле дефолтной темы Godot 4: **Играть**, **Настройки**, **Классы**.
 
-## 2D and 3D cross-platform game engine
+![Скриншот лобби](docs/screenshot.png)
 
-**[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
-game engine to create 2D and 3D games from a unified interface.** It provides a
-comprehensive set of [common tools](https://godotengine.org/features), so that
-users can focus on making games without having to reinvent the wheel. Games can
-be exported with one click to a number of platforms, including the major desktop
-platforms (Linux, macOS, Windows), mobile platforms (Android, iOS), as well as
-Web-based platforms and [consoles](https://godotengine.org/consoles).
+## Что внутри
 
-## Free, open source and community-driven
+- **Vulkan 1.0** — окно (GLFW), свопчейн, один графический пайплайн, push-константы,
+  4× MSAA (если поддерживается), пересоздание свопчейна при ресайзе, опциональные
+  validation layers (`--validate`).
+- **UI без движка** — собственный draw list (текстурированные треугольники),
+  растровые скругления как у Godot `StyleBoxFlat`, шейдерный текст из атласа.
+- **Стиль Godot** — все визуальные константы кнопок взяты из дефолтной темы
+  Godot 4 (`scene/theme/default_theme.cpp`):
 
-Godot is completely free and open source under the very permissive [MIT license](https://godotengine.org/license).
-No strings attached, no royalties, nothing. The users' games are theirs, down
-to the last line of engine code. Godot's development is fully independent and
-community-driven, empowering users to help shape their engine to match their
-expectations. It is supported by the [Godot Foundation](https://godot.foundation/)
-not-for-profit.
+  | Элемент | Значение Godot 4 |
+  |---|---|
+  | Фон кнопки (normal) | `rgba(0.1, 0.1, 0.1, 0.6)` |
+  | Фон кнопки (hover) | `rgba(0.225, 0.225, 0.225, 0.6)` |
+  | Фон кнопки (pressed) | `rgba(0, 0, 0, 0.6)` |
+  | Рамка фокуса | 2 px, `rgba(1, 1, 1, 0.75)`, без заливки |
+  | Цвет текста | `0.875` / `0.95` (hover) / `1.0` (pressed) |
+  | Радиус углов | 3 px, детализация `min(ceil(1.5·r), 6)` |
+  | Акцент | Godot Blue `#478cbf` |
 
-Before being open sourced in [February 2014](https://github.com/godotengine/godot/commit/0b806ee0fc9097fa7bda7ac0109191c9c5e0a1ac),
-Godot had been developed by [Juan Linietsky](https://github.com/reduz) and
-[Ariel Manzur](https://github.com/punto-) for several years as an in-house
-engine, used to publish several work-for-hire titles.
+- **Шрифт Noto Sans** (дефолтный шрифт Godot 4) с полной кириллицей, запекается
+  в атлас через `stb_truetype` при старте.
 
-![Screenshot of a 3D scene in the Godot Engine editor](https://raw.githubusercontent.com/godotengine/godot-design/master/screenshots/editor_tps_demo_1920x1080.jpg)
+## Сборка
 
-## Getting the engine
+Нужны: CMake ≥ 3.16, компилятор C++17, Python 3, Vulkan SDK (заголовки +
+загрузчик `libvulkan`).
 
-### Binary downloads
+GLFW подхватится системный (`libglfw3-dev`), а если его нет — скачается и
+соберётся автоматически (нужен `git`).
 
-Official binaries for the Godot editor and the export templates can be found
-[on the Godot website](https://godotengine.org/download).
+### Linux
 
-### Compiling from source
+```bash
+# Debian/Ubuntu
+sudo apt install libvulkan-dev libglfw3-dev glslang-tools  # glslang-tools опционален
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/ksila
+```
 
-[See the official docs](https://docs.godotengine.org/en/latest/engine_details/development/compiling)
-for compilation instructions for every supported platform.
+### Windows
 
-## Community and contributing
+Установите [Vulkan SDK](https://vulkan.lunarg.com/) и GLFW (или положите его
+рядом), затем:
 
-Godot is not only an engine but an ever-growing community of users and engine
-developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
+```bat
+cmake -B build
+cmake --build build --config Release
+build\Release\ksila.exe
+```
 
-The best way to get in touch with the core engine developers is to join the
-[Godot Contributors Chat](https://chat.godotengine.org).
+### Опции
 
-To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
-This document also includes guidelines for reporting bugs.
+- `--width N --height N` — размер окна (по умолчанию 1280×720)
+- `--validate` — включить Vulkan validation layers
+- `--help` — справка
 
-## Documentation and demos
+### CMake-флаги
 
-The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
-It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
+- `KSILA_PREBUILT_SHADERS=ON` — всегда использовать готовые SPIR-V из
+  `shaders/prebuilt/` (не требует glslc/glslangValidator)
+- `KSILA_GLFW_NULL=ON` — собрать GLFW в headless-режиме (без X11/Wayland;
+  окно не откроется, полезно только для сборки)
 
-The [class reference](https://docs.godotengine.org/en/latest/classes/)
-is also accessible from the Godot editor.
+## Управление
 
-We also maintain official demos in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
-as well as the [Asset Store](https://store.godotengine.org/).
+- **Мышь** — наведение и нажатие кнопок
+- **Tab / ↑ / ↓ + Enter** — навигация с клавиатуры (с рамкой фокуса как в Godot)
+- **Esc** — выход
 
-There are also a number of other
-[learning resources](https://docs.godotengine.org/en/latest/community/tutorials.html)
-provided by the community, such as text and video tutorials, demos, etc.
-Consult the [community channels](https://godotengine.org/community)
-for more information.
+## Инструменты
 
-[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
-[![Translate on Weblate](https://hosted.weblate.org/widgets/godot-engine/-/godot/svg-badge.svg)](https://hosted.weblate.org/engage/godot-engine/?utm_source=widget)
+- `ksila-preview` — программный растеризатор того же UI без GPU:
+
+```bash
+./build/ksila-preview --hover 0 --out hover.png   # скриншот с hover на «Играть»
+./build/ksila-preview --status 1 --out toast.png  # статус-сообщение «Настройки»
+```
+
+## Структура
+
+```
+src/
+  main.cpp      — окно, ввод, главный цикл
+  renderer.cpp  — Vulkan: свопчейн, пайплайн, атлас, отрисовка
+  ui.cpp/.h     — draw list, шрифт, лобби (без зависимости от Vulkan)
+shaders/        — GLSL-шейдеры (+ prebuilt SPIR-V)
+tools/          — embed_binary.py, preview.cpp, png_probe.py
+thirdparty/stb  — stb_truetype, stb_image_write (public domain)
+assets/fonts/   — Noto Sans (SIL OFL 1.1)
+```
+
+## Лицензии
+
+- Код — MIT (см. [LICENSE.txt](LICENSE.txt))
+- Noto Sans — [SIL OFL 1.1](assets/fonts/OFL.txt)
+- stb — public domain / MIT (см. [thirdparty/stb/LICENSE](thirdparty/stb/LICENSE))
