@@ -9,7 +9,14 @@
 
 #include "ui.h"
 
+// Platform window handle: GLFWwindow on desktop, ANativeWindow on Android.
+#if defined(__ANDROID__)
+struct ANativeWindow;
+using SystemWindow = struct ANativeWindow *;
+#else
 struct GLFWwindow;
+using SystemWindow = GLFWwindow *;
+#endif
 
 namespace ksila {
 
@@ -17,12 +24,19 @@ class Renderer {
 public:
 	// p_validation enables the VK_LAYER_KHRONOS_validation layer + debug
 	// messenger when available.
-	bool init(GLFWwindow *p_window, const FontAtlas &p_font, bool p_validation);
+	bool init(SystemWindow p_window, const FontAtlas &p_font, bool p_validation);
 	void shutdown();
 
 	// Notifies the renderer that the framebuffer size changed (safe to call
 	// from a window callback).
 	void notify_resize() { framebuffer_resized_ = true; }
+
+	// The application layer feeds the current drawable size each frame
+	// (GLFW: glfwGetFramebufferSize; Android: ANativeWindow_getWidth/Height).
+	void set_framebuffer_size(int p_w, int p_h) {
+		fb_width_ = p_w;
+		fb_height_ = p_h;
+	}
 
 	// Uploads the draw list geometry and presents one frame.
 	// Returns false only on fatal errors (device lost etc.).
@@ -51,7 +65,9 @@ private:
 	void destroy_geometry_buffers();
 	void recreate_swapchain();
 
-	GLFWwindow *window_ = nullptr;
+	SystemWindow window_ = nullptr;
+	int fb_width_ = 0;
+	int fb_height_ = 0;
 
 	// Core objects.
 	VkInstance instance_ = VK_NULL_HANDLE;

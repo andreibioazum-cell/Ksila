@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(Ksila VERSION 0.1.0 LANGUAGES CXX)
+project(Ksila VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,24 +17,26 @@ option(KSILA_GLFW_NULL "Build GLFW with its headless 'null' platform (for builds
 find_package(Vulkan REQUIRED)
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
-# GLFW: prefer a system install, otherwise fetch and build it.
-find_package(glfw3 3.3 QUIET)
-if(NOT glfw3_FOUND)
-	message(STATUS "GLFW not found - fetching from GitHub (needs git)")
-	include(FetchContent)
-	FetchContent_Declare(glfw
-		GIT_REPOSITORY https://github.com/glfw/glfw.git
-		GIT_TAG 3.4)
-	set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-	set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-	set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-	if(KSILA_GLFW_NULL)
-		set(GLFW_BUILD_X11 OFF CACHE BOOL "" FORCE)
-		set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
-		set(GLFW_BUILD_NULL ON CACHE BOOL "" FORCE)
+if(NOT ANDROID)
+	# GLFW: prefer a system install, otherwise fetch and build it.
+	find_package(glfw3 3.3 QUIET)
+	if(NOT glfw3_FOUND)
+		message(STATUS "GLFW not found - fetching from GitHub (needs git)")
+		include(FetchContent)
+		FetchContent_Declare(glfw
+			GIT_REPOSITORY https://github.com/glfw/glfw.git
+			GIT_TAG 3.4)
+		set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+		set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+		set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+		set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+		if(KSILA_GLFW_NULL)
+			set(GLFW_BUILD_X11 OFF CACHE BOOL "" FORCE)
+			set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+			set(GLFW_BUILD_NULL ON CACHE BOOL "" FORCE)
+		endif()
+		FetchContent_MakeAvailable(glfw)
 	endif()
-	FetchContent_MakeAvailable(glfw)
 endif()
 
 # ---------------------------------------------------------------------------
@@ -115,34 +117,69 @@ add_custom_command(OUTPUT ${GEN_DIR}/shader_lobby_frag.h
 	DEPENDS ${EMBED_TOOL} ${GEN_DIR}/lobby.frag.spv
 	COMMENT "Embedding lobby.frag SPIR-V")
 
-# ---------------------------------------------------------------------------
-# Targets
-# ---------------------------------------------------------------------------
-add_executable(ksila
-	src/main.cpp
-	src/renderer.cpp
+set(KSILA_COMMON_SOURCES
 	src/ui.cpp
 	${GEN_DIR}/font_data.cpp
 	${GEN_DIR}/font_data_bold.cpp
 	${GEN_DIR}/shader_lobby_vert.h
 	${GEN_DIR}/shader_lobby_frag.h)
-target_include_directories(ksila PRIVATE src ${GEN_DIR} thirdparty/stb)
-target_link_libraries(ksila PRIVATE Vulkan::Vulkan glfw)
 
-add_executable(ksila-preview
-	tools/preview.cpp
-	src/ui.cpp
-	${GEN_DIR}/font_data.cpp
-	${GEN_DIR}/font_data_bold.cpp)
-target_include_directories(ksila-preview PRIVATE src ${GEN_DIR} thirdparty/stb)
+# ---------------------------------------------------------------------------
+# Desktop targets (Windows / Linux / macOS)
+# ---------------------------------------------------------------------------
+if(NOT ANDROID)
+	add_executable(ksila
+		src/main.cpp
+		src/renderer.cpp
+		${KSILA_COMMON_SOURCES})
+	target_include_directories(ksila PRIVATE src ${GEN_DIR} thirdparty/stb)
+	target_link_libraries(ksila PRIVATE Vulkan::Vulkan glfw)
 
+	add_executable(ksila-preview
+		tools/preview.cpp
+		${KSILA_COMMON_SOURCES})
+	target_include_directories(ksila-preview PRIVATE src ${GEN_DIR} thirdparty/stb)
+endif()
+
+# ---------------------------------------------------------------------------
+# Android target: libksila.so loaded by android.app.NativeActivity
+# ---------------------------------------------------------------------------
+if(ANDROID)
+	if(NOT DEFINED ENV{ANDROID_NDK_HOME} AND NOT DEFINED ANDROID_NDK)
+		message(FATAL_ERROR "Use the NDK toolchain file: -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake")
+	endif()
+	if("${ANDROID_PLATFORM}" STREQUAL "")
+		message(FATAL_ERROR "Set -DANDROID_PLATFORM=android-24 or higher (Vulkan requires API 24).")
+	endif()
+
+	# native_app_glue ships with the NDK.
+	add_library(native_app_glue STATIC ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+	target_include_directories(native_app_glue PUBLIC ${ANDROID_NDK}/sources/android/native_app_glue)
+
+	add_library(ksila SHARED
+		src/platform_android.cpp
+		src/renderer.cpp
+		${KSILA_COMMON_SOURCES})
+	target_include_directories(ksila PRIVATE src ${GEN_DIR} thirdparty/stb)
+	target_link_libraries(ksila PRIVATE Vulkan::Vulkan android log native_app_glue)
+endif()
+
+# ---------------------------------------------------------------------------
+# Shared compiler tweaks
+# ---------------------------------------------------------------------------
 # stb headers trigger -Wmissing-field-initializers under GCC/Clang.
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-	target_compile_options(ksila PRIVATE -Wno-missing-field-initializers)
-	target_compile_options(ksila-preview PRIVATE -Wno-missing-field-initializers)
+	foreach(target ksila ksila-preview)
+		if(TARGET ${target})
+			target_compile_options(${target} PRIVATE -Wno-missing-field-initializers)
+		endif()
+	endforeach()
 endif()
 # UTF-8 sources (Cyrillic UI strings) on MSVC.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	target_compile_options(ksila PRIVATE /utf-8)
-	target_compile_options(ksila-preview PRIVATE /utf-8)
+	foreach(target ksila ksila-preview)
+		if(TARGET ${target})
+			target_compile_options(${target} PRIVATE /utf-8)
+		endif()
+	endforeach()
 endif()

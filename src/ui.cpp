@@ -448,7 +448,7 @@ void Lobby::build(DrawList &p_dl, float p_w, float p_h) const {
 	font_->set_white_uv(p_dl);
 	p_dl.reserve(220);
 
-	const float s = p_h / DESIGN_H; // UI scale relative to the 720p design
+	const float s = std::fmin(p_h / DESIGN_H, p_w / 920.f); // UI scale (720p design)
 
 	// ---- background: subtle vertical gradient --------------------------------
 	p_dl.rect_vgrad(0.f, 0.f, p_w, p_h,

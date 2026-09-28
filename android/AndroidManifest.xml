@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ksila — лобби на Vulkan API. Чисто нативное приложение (NativeActivity,
+     java-кода нет: android:hasCode="false"). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ksila.lobby">
+
+    <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34"/>
+
+    <!-- Устанавливаться должны только на устройства с Vulkan 1.0+. -->
+    <uses-feature android:name="android.hardware.vulkan.version"
+        android:version="0x400003" android:required="true"/>
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+
+    <application
+        android:label="Ksila"
+        android:icon="@mipmap/ic_launcher"
+        android:hasCode="false"
+        android:extractNativeLibs="true"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+        <activity
+            android:name="android.app.NativeActivity"
+            android:exported="true"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|density|uiMode">
+            <meta-data android:name="android.app.lib_name" android:value="ksila"/>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

@@ -4,9 +4,14 @@
 #include <cstring>
 #include <vector>
 
+#if defined(__ANDROID__)
+#include <android/log.h>
+#include <android/native_window.h>
+#else
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+#endif
 
 // SPIR-V shaders, embedded at build time by CMake (tools/embed_binary.py).
 #include "shader_lobby_vert.h"
@@ -16,6 +21,12 @@
 #define KSILA_LOG(...) do { std::fprintf(stderr, "[ksila] " __VA_ARGS__); std::fprintf(stderr, "\n"); } while (0)
 #else
 #define KSILA_LOG(...) ((void)0)
+#endif
+
+#if defined(__ANDROID__)
+#define KSILA_ERROR(...) do { __android_log_print(ANDROID_LOG_ERROR, "Ksila", __VA_ARGS__); } while (0)
+#else
+#define KSILA_ERROR(...) do { std::fprintf(stderr, "Ksila: " __VA_ARGS__); std::fprintf(stderr, "\n"); } while (0)
 #endif
 
 namespace ksila {
@@ -135,42 +146,42 @@ static void transition_image_layout(VkCommandBuffer p_cmd, VkImage p_image, VkIm
 
 // --------------------------------------------------------------------- init --
 
-bool Renderer::init(GLFWwindow *p_window, const FontAtlas &p_font, bool p_validation) {
+bool Renderer::init(SystemWindow p_window, const FontAtlas &p_font, bool p_validation) {
 	window_ = p_window;
 
 	if (!create_instance(p_validation)) {
-		std::fprintf(stderr, "Ksila: failed to create Vulkan instance.\n");
+		KSILA_ERROR("failed to create Vulkan instance.");
 		return false;
 	}
 	if (validation_enabled_ && !create_debug_messenger()) {
-		std::fprintf(stderr, "Ksila: failed to create debug messenger.\n");
+		KSILA_ERROR("failed to create debug messenger.");
 		return false;
 	}
 	if (!create_surface(p_window)) {
-		std::fprintf(stderr, "Ksila: failed to create window surface.\n");
+		KSILA_ERROR("failed to create window surface.");
 		return false;
 	}
 	if (!pick_physical_device()) {
-		std::fprintf(stderr, "Ksila: no suitable Vulkan device found (need graphics + presentation).\n");
+		KSILA_ERROR("no suitable Vulkan device found (need graphics + presentation).");
 		return false;
 	}
 	if (!create_logical_device()) {
-		std::fprintf(stderr, "Ksila: failed to create Vulkan device.\n");
+		KSILA_ERROR("failed to create Vulkan device.");
 		return false;
 	}
 	if (!create_swapchain() || !create_image_views() || !create_render_pass() || !create_msaa_target() ||
 			!create_framebuffers()) {
-		std::fprintf(stderr, "Ksila: failed to set up the swapchain.\n");
+		KSILA_ERROR("failed to set up the swapchain.");
 		return false;
 	}
 	if (!create_descriptor_layout() || !create_command_buffers() ||
 			!create_atlas_texture(p_font) || !create_descriptor_pool_and_set() ||
 			!create_pipeline()) {
-		std::fprintf(stderr, "Ksila: failed to set up the pipeline.\n");
+		KSILA_ERROR("failed to set up the pipeline.");
 		return false;
 	}
 	if (!create_sync_objects()) {
-		std::fprintf(stderr, "Ksila: failed to set up sync objects.\n");
+		KSILA_ERROR("failed to set up sync objects.");
 		return false;
 	}
 	return true;
@@ -186,12 +197,21 @@ bool Renderer::create_instance(bool p_validation) {
 	app.apiVersion = VK_API_VERSION_1_0;
 
 	uint32_t glfw_extension_count = 0;
-	const char **glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+	const char **glfw_extensions = nullptr;
+#if !defined(__ANDROID__)
+	glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+#endif
 
 	std::vector<const char *> extensions;
+#if defined(__ANDROID__)
+	// No GLFW on Android: the surface is created via VK_KHR_android_surface.
+	extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+	extensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#else
 	for (uint32_t i = 0; i < glfw_extension_count; i++) {
 		extensions.push_back(glfw_extensions[i]);
 	}
+#endif
 
 	const char *validation_layer = "VK_LAYER_KHRONOS_validation";
 	bool want_validation = p_validation;
@@ -208,7 +228,7 @@ bool Renderer::create_instance(bool p_validation) {
 			}
 		}
 		if (!found) {
-			std::fprintf(stderr, "Ksila: validation layer requested but not installed; continuing without it.\n");
+			KSILA_ERROR("validation layer requested but not installed; continuing without it.");
 			want_validation = false;
 		}
 	}
@@ -234,7 +254,7 @@ bool Renderer::create_instance(bool p_validation) {
 
 	VkResult result = vkCreateInstance(&info, nullptr, &instance_);
 	if (result != VK_SUCCESS) {
-		std::fprintf(stderr, "Ksila: vkCreateInstance failed (%d).\n", int(result));
+		KSILA_ERROR("vkCreateInstance failed (%d).", int(result));
 		return false;
 	}
 	return true;
@@ -254,8 +274,15 @@ bool Renderer::create_debug_messenger() {
 	return create(instance_, &info, nullptr, &debug_messenger_) == VK_SUCCESS;
 }
 
-bool Renderer::create_surface(GLFWwindow *p_window) {
+bool Renderer::create_surface(SystemWindow p_window) {
+#if defined(__ANDROID__)
+	VkAndroidSurfaceCreateInfoKHR info{};
+	info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+	info.window = p_window; // struct ANativeWindow *
+	return vkCreateAndroidSurfaceKHR(instance_, &info, nullptr, &surface_) == VK_SUCCESS;
+#else
 	return glfwCreateWindowSurface(instance_, p_window, nullptr, &surface_) == VK_SUCCESS;
+#endif
 }
 
 bool Renderer::pick_physical_device() {
@@ -408,10 +435,16 @@ bool Renderer::create_swapchain() {
 
 	VkExtent2D extent = caps.currentExtent;
 	if (extent.width == 0xFFFFFFFF || extent.height == 0xFFFFFFFF) {
+#if defined(__ANDROID__)
+		// ANativeWindow always reports an exact size.
+		extent.width = uint32_t(ANativeWindow_getWidth(window_));
+		extent.height = uint32_t(ANativeWindow_getHeight(window_));
+#else
 		int w = 0, h = 0;
 		glfwGetFramebufferSize(window_, &w, &h);
 		extent.width = uint32_t(w);
 		extent.height = uint32_t(h);
+#endif
 	}
 	extent.width = extent.width < caps.minImageExtent.width ? caps.minImageExtent.width : extent.width;
 	extent.height = extent.height < caps.minImageExtent.height ? caps.minImageExtent.height : extent.height;
@@ -805,7 +838,7 @@ bool Renderer::create_pipeline() {
 	VkShaderModule vert = create_shader_module(device_, LOBBY_VERT_SPV, LOBBY_VERT_SPV_SIZE);
 	VkShaderModule frag = create_shader_module(device_, LOBBY_FRAG_SPV, LOBBY_FRAG_SPV_SIZE);
 	if (!vert || !frag) {
-		std::fprintf(stderr, "Ksila: failed to create shader modules.\n");
+		KSILA_ERROR("failed to create shader modules.");
 		return false;
 	}
 
@@ -1031,14 +1064,14 @@ void Renderer::recreate_swapchain() {
 		return; // minimized; will retry on next resize
 	}
 	if (!create_image_views() || !create_msaa_target() || !create_framebuffers()) {
-		std::fprintf(stderr, "Ksila: failed to recreate swapchain.\n");
+		KSILA_ERROR("failed to recreate swapchain.");
 	}
 }
 
 bool Renderer::draw_frame(const DrawList &p_list) {
 	// Skip frames while minimized.
-	int fbw = 0, fbh = 0;
-	glfwGetFramebufferSize(window_, &fbw, &fbh);
+	int fbw = fb_width_;
+	int fbh = fb_height_;
 	if (fbw <= 0 || fbh <= 0) {
 		return true;
 	}
@@ -1083,7 +1116,7 @@ bool Renderer::draw_frame(const DrawList &p_list) {
 			new_icap *= 2;
 		}
 		if (!create_geometry_buffers(new_vcap, new_icap)) {
-			std::fprintf(stderr, "Ksila: out of memory for geometry buffers.\n");
+			KSILA_ERROR("out of memory for geometry buffers.");
 			return false;
 		}
 	}

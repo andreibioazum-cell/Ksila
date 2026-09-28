@@ -130,6 +130,7 @@ int main(int p_argc, char **p_argv) {
 		if (fbw > 0 && fbh > 0) {
 			draw_list.clear();
 			lobby.build(draw_list, float(fbw), float(fbh));
+			renderer.set_framebuffer_size(fbw, fbh);
 			if (!renderer.draw_frame(draw_list)) {
 				std::fprintf(stderr, "Ksila: lost the Vulkan device, exiting.\n");
 				break;
