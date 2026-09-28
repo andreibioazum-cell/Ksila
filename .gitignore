@@ -16,6 +16,7 @@ Thumbs.db
 # Preview outputs
 *.png
 !docs/*.png
+!android/res/**/*.png
 
 # Python
 __pycache__/
