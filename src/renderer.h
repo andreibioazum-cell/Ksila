@@ -51,7 +51,7 @@ public:
 private:
 	bool create_instance(bool p_validation);
 	bool create_debug_messenger();
-	bool create_surface(GLFWwindow *p_window);
+	bool create_surface(SystemWindow p_window);
 	bool pick_physical_device();
 	bool create_logical_device();
 	bool create_swapchain();
