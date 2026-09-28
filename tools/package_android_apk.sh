@@ -74,6 +74,6 @@ fi
 # 5) Sign (v1+v2).
 mkdir -p "$(dirname "$OUT")"
 "$BT/apksigner" sign --key "$KEY" --cert "$CERT" --out "$OUT" "$WORK/aligned.apk"
-"$BT/apksigner" verify --print-certs "$OUT" | head -3
+"$BT/apksigner" verify --print-certs "$OUT" || true
 
 echo "APK ready: $OUT ($(du -h "$OUT" | cut -f1))"

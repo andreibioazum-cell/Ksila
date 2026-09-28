@@ -120,11 +120,27 @@ jobs:
 
       - name: Package APK
         run: |
+          set +e
           SO_ARM64="$(find build-android-arm64 -name libksila.so -print -quit)"
           SO_X86_64="$(find build-android-x86_64 -name libksila.so -print -quit)"
-          test -n "$SO_ARM64" && test -n "$SO_X86_64"
+          if [ -z "$SO_ARM64" ] || [ -z "$SO_X86_64" ]; then
+            echo "::error::libksila.so not found in build outputs"
+            exit 1
+          fi
           bash tools/package_android_apk.sh --out dist/Ksila-lobby.apk \
-            "$SO_ARM64=arm64-v8a" "$SO_X86_64=x86_64"
+            "$SO_ARM64=arm64-v8a" "$SO_X86_64=x86_64" 2>&1 | tee package.log
+          RC=${PIPESTATUS[0]}
+          if [ "$RC" -ne 0 ]; then
+            grep -m 10 -iE "error|fatal|not found|missing|failed|denied|usage" package.log | cut -c1-240 | while IFS= read -r l; do echo "::error::$l"; done
+            exit 1
+          fi
+
+      - name: Upload package log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-package-log
+          path: package.log
 
       - uses: actions/upload-artifact@v4
         with:
