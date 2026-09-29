@@ -162,6 +162,8 @@ if(ANDROID)
 		${KSILA_COMMON_SOURCES})
 	target_include_directories(ksila PRIVATE src ${GEN_DIR} thirdparty/stb)
 	target_link_libraries(ksila PRIVATE Vulkan::Vulkan android log native_app_glue)
+	# Android 15+ devices may use 16 KB memory pages.
+	target_link_options(ksila PRIVATE "-Wl,-z,max-page-size=16384")
 endif()
 
 # ---------------------------------------------------------------------------

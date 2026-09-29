@@ -14,6 +14,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <csignal>
 
 #include "font_data.h"
 #include "renderer.h"
@@ -30,9 +31,26 @@ struct AppState {
 	ksila::Renderer renderer;
 	ksila::Lobby lobby;
 	bool renderer_ready = false;
+	bool init_failed = false;
 	bool resumed = false;
 	bool focused = true;
 };
+
+// Turns silent native crashes into logcat entries (tag "Ksila").
+void crash_handler(int p_signal) {
+	__android_log_print(ANDROID_LOG_ERROR, "Ksila",
+			"FATAL: signal %d. Пришлите вывод 'adb logcat -s Ksila DEBUG' для диагностики.",
+			p_signal);
+	::signal(p_signal, SIG_DFL);
+	::raise(p_signal);
+}
+
+void install_crash_handlers() {
+	const int crash_signals[] = { SIGSEGV, SIGABRT, SIGBUS, SIGFPE, SIGILL };
+	for (int sig : crash_signals) {
+		::signal(sig, crash_handler);
+	}
+}
 
 void destroy_renderer(AppState *p_state) {
 	if (p_state->renderer_ready) {
@@ -51,8 +69,9 @@ bool init_renderer(android_app *p_app, AppState *p_state) {
 	if (w <= 0 || h <= 0) {
 		return false;
 	}
+	LOGI("initializing Vulkan renderer (%dx%d)...", w, h);
 	if (!p_state->renderer.init(p_app->window, p_state->font, /*p_validation=*/false)) {
-		LOGE("renderer init failed");
+		LOGE("renderer init failed (нет Vulkan / поверхность не создалась)");
 		return false;
 	}
 	p_state->renderer_ready = true;
@@ -65,8 +84,12 @@ void handle_cmd(android_app *p_app, int32_t p_cmd) {
 	switch (p_cmd) {
 		case APP_CMD_INIT_WINDOW:
 			// The window (re)appeared — (re)create the renderer.
-			if (!state->renderer_ready) {
-				init_renderer(p_app, state);
+			if (!state->renderer_ready && !state->init_failed) {
+				if (!init_renderer(p_app, state)) {
+					// Clean exit instead of a black ANR screen.
+					state->init_failed = true;
+					ANativeActivity_finish(p_app->activity);
+				}
 			}
 			break;
 		case APP_CMD_TERM_WINDOW:
@@ -151,63 +174,80 @@ int32_t handle_input(android_app *p_app, AInputEvent *p_event) {
 } // namespace
 
 void android_main(android_app *p_app) {
+	install_crash_handlers();
+	LOGI("ksila native started");
+
 	AppState state;
 	p_app->userData = &state;
 	p_app->onAppCmd = handle_cmd;
 	p_app->onInputEvent = handle_input;
 
-	if (!state.font.init(FONT_REGULAR_TTF, FONT_REGULAR_TTF_SIZE, FONT_BOLD_TTF, FONT_BOLD_TTF_SIZE)) {
-		LOGE("font atlas bake failed");
-		ANativeActivity_finish(p_app->activity);
-	}
-	state.lobby.init(&state.font);
+	try {
+		if (!state.font.init(FONT_REGULAR_TTF, FONT_REGULAR_TTF_SIZE, FONT_BOLD_TTF, FONT_BOLD_TTF_SIZE)) {
+			LOGE("font atlas bake failed");
+			ANativeActivity_finish(p_app->activity);
+		}
+		state.lobby.init(&state.font);
 
-	ksila::DrawList draw_list;
-	auto last_time = std::chrono::steady_clock::now();
+		ksila::DrawList draw_list;
+		auto last_time = std::chrono::steady_clock::now();
 
-	while (!p_app->destroyRequested) {
-		// Block until events when idle; poll without blocking while animating.
-		const bool active = state.renderer_ready && state.resumed && state.focused;
-		int events = 0;
-		android_poll_source *source = nullptr;
-		while (ALooper_pollAll(active ? 0 : -1, nullptr, &events, reinterpret_cast<void **>(&source)) >= 0) {
-			if (source != nullptr) {
-				source->process(p_app, source);
+		while (!p_app->destroyRequested) {
+			// Drain all pending events. Recompute the activity EVERY iteration:
+			// block (-1) only while there is nothing to render, otherwise poll
+			// without blocking and keep drawing. (A stale timeout value here
+			// froze the app after the startup event burst.)
+			for (;;) {
+				const bool active_now = state.renderer_ready && state.resumed && state.focused;
+				int events = 0;
+				android_poll_source *source = nullptr;
+				int result = ALooper_pollAll(active_now ? 0 : -1, nullptr, &events,
+						reinterpret_cast<void **>(&source));
+				if (result < 0) {
+					break; // no more pending events — go render
+				}
+				if (source != nullptr) {
+					source->process(p_app, source);
+				}
+				if (p_app->destroyRequested) {
+					break;
+				}
 			}
 			if (p_app->destroyRequested) {
 				break;
 			}
-		}
-		if (p_app->destroyRequested) {
-			break;
-		}
 
-		if (!state.renderer_ready || !state.resumed || !state.focused || p_app->window == nullptr) {
-			continue;
-		}
+			if (!state.renderer_ready || !state.resumed || !state.focused || p_app->window == nullptr) {
+				continue;
+			}
 
-		const int w = ANativeWindow_getWidth(p_app->window);
-		const int h = ANativeWindow_getHeight(p_app->window);
-		if (w <= 0 || h <= 0) {
-			continue;
-		}
+			const int w = ANativeWindow_getWidth(p_app->window);
+			const int h = ANativeWindow_getHeight(p_app->window);
+			if (w <= 0 || h <= 0) {
+				continue;
+			}
 
-		auto now = std::chrono::steady_clock::now();
-		double delta = std::chrono::duration<double>(now - last_time).count();
-		last_time = now;
-		if (delta > 0.25 || delta < 0.0) {
-			delta = 0.016; // clamp after long pauses
-		}
-		state.lobby.update(delta);
+			auto now = std::chrono::steady_clock::now();
+			double delta = std::chrono::duration<double>(now - last_time).count();
+			last_time = now;
+			if (delta > 0.25 || delta < 0.0) {
+				delta = 0.016; // clamp after long pauses
+			}
+			state.lobby.update(delta);
 
-		draw_list.clear();
-		state.lobby.build(draw_list, float(w), float(h));
+			draw_list.clear();
+			state.lobby.build(draw_list, float(w), float(h));
 
-		state.renderer.set_framebuffer_size(w, h);
-		if (!state.renderer.draw_frame(draw_list)) {
-			LOGE("draw_frame failed, finishing");
-			ANativeActivity_finish(p_app->activity);
+			state.renderer.set_framebuffer_size(w, h);
+			if (!state.renderer.draw_frame(draw_list)) {
+				LOGE("draw_frame failed, finishing");
+				ANativeActivity_finish(p_app->activity);
+			}
 		}
+	} catch (const std::exception &p_error) {
+		LOGE("FATAL: std::exception: %s", p_error.what());
+	} catch (...) {
+		LOGE("FATAL: unknown C++ exception");
 	}
 
 	destroy_renderer(&state);

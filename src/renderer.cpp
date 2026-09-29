@@ -24,6 +24,12 @@
 #endif
 
 #if defined(__ANDROID__)
+#undef KSILA_LOG
+// On Android these go to logcat (tag "Ksila") — run `adb logcat -s Ksila`.
+#define KSILA_LOG(...) __android_log_print(ANDROID_LOG_INFO, "Ksila", __VA_ARGS__)
+#endif
+
+#if defined(__ANDROID__)
 #define KSILA_ERROR(...) do { __android_log_print(ANDROID_LOG_ERROR, "Ksila", __VA_ARGS__); } while (0)
 #else
 #define KSILA_ERROR(...) do { std::fprintf(stderr, "Ksila: " __VA_ARGS__); std::fprintf(stderr, "\n"); } while (0)
@@ -40,9 +46,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
 		VkDebugUtilsMessageTypeFlagsEXT p_type,
 		const VkDebugUtilsMessengerCallbackDataEXT *p_data, void *) {
 	if (p_severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-		std::fprintf(stderr, "[vk validation] error: %s\n", p_data->pMessage);
+		KSILA_ERROR("validation: %s", p_data->pMessage);
 	} else if (p_severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-		std::fprintf(stderr, "[vk validation] warning: %s\n", p_data->pMessage);
+		KSILA_ERROR("validation warning: %s", p_data->pMessage);
 	} else {
 		KSILA_LOG("validation: %s", p_data->pMessage);
 	}
@@ -355,6 +361,11 @@ bool Renderer::pick_physical_device() {
 }
 
 bool Renderer::create_logical_device() {
+	VkPhysicalDeviceProperties props{};
+	vkGetPhysicalDeviceProperties(physical_device_, &props);
+	KSILA_LOG("vulkan device: %s (API %u.%u)", props.deviceName,
+			VK_VERSION_MAJOR(props.apiVersion), VK_VERSION_MINOR(props.apiVersion));
+
 	uint32_t queue_count = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(physical_device_, &queue_count, nullptr);
 	std::vector<VkQueueFamilyProperties> queues(queue_count);
@@ -411,9 +422,31 @@ bool Renderer::create_logical_device() {
 	return true;
 }
 
+// Composite alpha: Android (SurfaceFlinger) and Wayland often do NOT support
+// VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR — the swapchain creation then fails and
+// the app dies on a black screen. Pick a mode the surface actually supports.
+static VkCompositeAlphaFlagBitsKHR choose_composite_alpha(VkCompositeAlphaFlagsKHR p_supported) {
+	const VkCompositeAlphaFlagBitsKHR preferences[] = {
+		VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+		VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+		VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+		VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+	};
+	for (VkCompositeAlphaFlagBitsKHR pref : preferences) {
+		if (p_supported & pref) {
+			return pref;
+		}
+	}
+	return VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // surface reported nothing sane
+}
+
 bool Renderer::create_swapchain() {
 	VkSurfaceCapabilitiesKHR caps{};
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device_, surface_, &caps);
+	VkResult caps_result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device_, surface_, &caps);
+	if (caps_result != VK_SUCCESS) {
+		KSILA_ERROR("vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed (%d)", int(caps_result));
+		return false;
+	}
 
 	uint32_t format_count = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device_, surface_, &format_count, nullptr);
@@ -470,7 +503,7 @@ bool Renderer::create_swapchain() {
 	info.imageArrayLayers = 1;
 	info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	info.preTransform = caps.currentTransform;
-	info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	info.compositeAlpha = choose_composite_alpha(caps.supportedCompositeAlpha);
 	info.presentMode = present_mode;
 	info.clipped = VK_TRUE;
 	info.oldSwapchain = VK_NULL_HANDLE;
@@ -482,7 +515,11 @@ bool Renderer::create_swapchain() {
 		info.pQueueFamilyIndices = families;
 	}
 
-	if (vkCreateSwapchainKHR(device_, &info, nullptr, &swapchain_) != VK_SUCCESS) {
+	VkResult swapchain_result = vkCreateSwapchainKHR(device_, &info, nullptr, &swapchain_);
+	if (swapchain_result != VK_SUCCESS) {
+		KSILA_ERROR("vkCreateSwapchainKHR failed (%d): format=%d extent=%ux%u images=%u composite=%u transform=%u",
+				int(swapchain_result), int(swapchain_format_), swapchain_extent_.width, swapchain_extent_.height,
+				image_count, uint32_t(info.compositeAlpha), uint32_t(info.preTransform));
 		return false;
 	}
 
@@ -490,6 +527,9 @@ bool Renderer::create_swapchain() {
 	vkGetSwapchainImagesKHR(device_, swapchain_, &count, nullptr);
 	swapchain_images_.resize(count);
 	vkGetSwapchainImagesKHR(device_, swapchain_, &count, swapchain_images_.data());
+	KSILA_LOG("swapchain: %ux%u, format %d, %u images, composite %u",
+			swapchain_extent_.width, swapchain_extent_.height, int(swapchain_format_),
+			count, uint32_t(info.compositeAlpha));
 	return true;
 }
 

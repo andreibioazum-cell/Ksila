@@ -100,6 +100,20 @@ bash tools/package_android_apk.sh --out Ksila-lobby.apk \
   "$(find build-android -name libksila.so -print -quit)=arm64-v8a"
 ```
 
+## Если приложение падает (диагностика)
+
+Все нативные ошибки и падения пишутся в logcat с тегом `Ksila`. Подключите
+телефон по USB и снимите лог:
+
+```bash
+adb logcat -c          # очистить буфер
+# запустить Ksila на телефоне, дождаться вылета
+adb logcat -d -s Ksila DEBUG "*:F"
+```
+
+В логе будет строка `FATAL: signal ...` или конкретная ошибка Vulkan —
+пришлите её, и причина найдётся сразу.
+
 ## Управление
 
 - **Мышь** — наведение и нажатие кнопок
